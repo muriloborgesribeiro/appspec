@@ -1,0 +1,173 @@
+{% extends 'diagnostico/base.html' %}
+
+{% block title %}Como Funciona — APPSPEC{% endblock %}
+
+{% block content %}
+
+<!-- SEÇÃO 1: A DISCIPLINA E O SISTEMA -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">📚 Seção 1: A Disciplina e o Sistema</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>Conteúdo da Aula</th>
+                    <th>Tecnologia</th>
+                    <th>Componente no APPSPEC</th>
+                    <th>Arquivo</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for item in conteudo.mapa_disciplina %}
+            <tr>
+                <td>{{ item.conteudo_aula }}</td>
+                <td>{{ item.tecnologia }}</td>
+                <td>{{ item.componente }}</td>
+                <td><code>{{ item.arquivo }}</code></td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- SEÇÃO 2: O DATASET -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">📊 Seção 2: O Dataset</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-borderless">
+            <tr><td><strong>Nome:</strong></td><td>{{ conteudo.dataset.nome }}</td></tr>
+            <tr><td><strong>Fonte:</strong></td><td>{{ conteudo.dataset.fonte }}</td></tr>
+            <tr>
+                <td><strong>Pacientes:</strong></td>
+                <td>{{ conteudo.dataset.pacientes }}
+                    {% if conteudo.metricas.n_pacientes %}
+                    ({{ conteudo.metricas.n_pacientes }} após limpeza)
+                    {% endif %}
+                </td>
+            </tr>
+            {% if conteudo.metricas.features_usadas %}
+            <tr>
+                <td><strong>Features usadas:</strong></td>
+                <td>{{ conteudo.metricas.features_total_usadas }} features tabulares limpas</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>Referência:</strong></td>
+                <td>
+                    <a href="https://doi.org/10.5281/zenodo.7669442" target="_blank">
+                        {{ conteudo.dataset.referencia }}</a>
+                </td>
+            </tr>
+            <tr>
+                <td><strong>Como baixado:</strong></td>
+                <td><code>{{ conteudo.dataset.como_baixado }}</code></td>
+            </tr>
+            <tr><td><strong>Licença:</strong></td><td>{{ conteudo.dataset.licenca }}</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- SEÇÃO 3: O KNN EXPLICADO -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">🤖 Seção 3: O KNN Explicado</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>O que é KNN:</strong> {{ conteudo.knn.o_que_e }}</p>
+        <p><strong>Por que KNN para apendicite:</strong> {{ conteudo.knn.por_que_apendicite }}</p>
+        {% if conteudo.metricas.modelo_disponivel %}
+        <div class="alert alert-info">
+            <strong>k utilizado:</strong> {{ conteudo.metricas.k_otimo }}
+            (selecionado por cross-validation) |
+            <strong>Acurácia:</strong> {{ conteudo.metricas.acuracia_teste|floatformat:1 }}%
+        </div>
+        {% endif %}
+        <small class="text-muted">
+            Referência: <a href="https://doi.org/10.1109/TIT.1967.1053964" target="_blank">
+                {{ conteudo.knn.referencia }}</a>
+        </small>
+    </div>
+</div>
+
+<!-- SEÇÃO 4: O ALVARADO SCORE EXPLICADO -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">📋 Seção 4: O Alvarado Score Explicado</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>História:</strong> {{ conteudo.alvarado.historia }}</p>
+
+        <h6 class="mt-3">Critérios (MANTRELS):</h6>
+        <table class="table table-bordered table-sm">
+            <thead class="table-light">
+                <tr><th>Critério</th><th>Pontos</th><th>Categoria</th></tr>
+            </thead>
+            <tbody>
+            {% for item in conteudo.alvarado.criterios_tabela %}
+            <tr>
+                <td>{{ item.criterio }}</td>
+                <td class="text-center">{{ item.pontos }}</td>
+                <td>{{ item.categoria }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot class="table-primary">
+                <tr><td><strong>TOTAL</strong></td><td class="text-center"><strong>10</strong></td><td></td></tr>
+            </tfoot>
+        </table>
+
+        <h6>Pontos de corte:</h6>
+        <ul>
+        {% for faixa, descricao in conteudo.alvarado.pontos_corte.items %}
+            <li><strong>{{ faixa }}:</strong> {{ descricao }}</li>
+        {% endfor %}
+        </ul>
+
+        <p><strong>Limitações:</strong> {{ conteudo.alvarado.limitacoes }}</p>
+
+        <small class="text-muted">
+            Referências:
+            <a href="https://doi.org/10.1016/S0196-0644(86)80468-2" target="_blank">
+                {{ conteudo.alvarado.referencia }}</a> |
+            <a href="https://doi.org/10.1186/1741-7015-9-139" target="_blank">
+                {{ conteudo.alvarado.referencia_metanalise }}</a>
+        </small>
+    </div>
+</div>
+
+<!-- SEÇÃO 5: COMO USAR -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">🔧 Seção 5: Como Usar Este Sistema</h5>
+    </div>
+    <div class="card-body">
+        <h6>Passo a passo:</h6>
+        <ol>
+        {% for passo in conteudo.como_usar.passos %}
+            <li>{{ passo }}</li>
+        {% endfor %}
+        </ol>
+
+        <div class="row mt-3">
+            <div class="col-md-6">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">✅ O que o sistema faz</div>
+                    <div class="card-body"><small>{{ conteudo.como_usar.o_que_faz }}</small></div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card border-danger">
+                    <div class="card-header bg-danger text-white">❌ O que NÃO faz</div>
+                    <div class="card-body"><small>{{ conteudo.como_usar.o_que_nao_faz }}</small></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

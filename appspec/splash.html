@@ -1,0 +1,201 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>APPSPEC &mdash; Inicializa&ccedil;&atilde;o do Sistema</title>
+<meta name="description" content="Tela de inicializacao do APPSPEC - Sistema de apoio ao diagnostico de apendicite aguda">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+  :root {
+    --cor-primaria:   #1a5276;
+    --cor-secundaria: #ffffff;
+    --cor-alerta:     #e74c3c;
+    --cor-moderado:   #f39c12;
+    --cor-seguro:     #27ae60;
+    --cor-pedagogica: #2e86c1;
+    --cor-fundo:      #f8f9fa;
+  }
+  body { background-color: var(--cor-fundo); font-size: 0.95rem; }
+  .navbar-appspec { background-color: var(--cor-primaria) !important; }
+  .banner-disciplina {
+    background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);
+    color: white; border-radius: 0;
+  }
+  .badge-tech { font-size: 0.72rem; }
+  .log-box {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    max-height: 380px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 0.82rem;
+    line-height: 1.75;
+  }
+  .log-line { padding: 2px 4px; border-radius: 3px; }
+  .log-line.ok   { color: #1e7e34; }
+  .log-line.warn { color: #b45309; }
+  .log-line.err  { color: #c0392b; background: #fdecea; }
+  .log-line.step { color: var(--cor-primaria); font-weight: 600; }
+  .status-pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 20px; border-radius: 50px;
+    font-weight: 600; font-size: 0.9rem;
+  }
+  .status-pill.success {
+    background: #d4edda; border: 1px solid #c3e6cb; color: #155724;
+  }
+  .status-pill.warning {
+    background: #fff3cd; border: 1px solid #ffeeba; color: #856404;
+  }
+  .status-pill .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .success .dot { background: var(--cor-seguro); }
+  .warning .dot { background: var(--cor-moderado); }
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%     { opacity:0.4; transform:scale(0.8); }
+  }
+  .btn-entrar {
+    background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);
+    border: none; color: #fff; font-weight: 600;
+    padding: 14px; font-size: 1.05rem; border-radius: 8px;
+    transition: all 0.2s ease; text-decoration: none;
+    display: block; text-align: center; width: 100%;
+  }
+  .btn-entrar:hover {
+    background: linear-gradient(135deg, #1a5276 0%, #3498db 100%);
+    color: #fff; transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(26,82,118,0.3);
+  }
+  .card-etapas .list-group-item {
+    font-size: 0.85rem; padding: 6px 12px;
+    border-left: 3px solid var(--cor-pedagogica);
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark navbar-appspec py-1">
+  <div class="container-fluid">
+    <span class="navbar-brand">&#x1F3E5; APPSPEC &mdash; Apendicite</span>
+  </div>
+</nav>
+
+<!-- BANNER DISCIPLINA -->
+<div class="banner-disciplina text-center py-1">
+  <small>
+    &#x1F393; <strong>Agentes Inteligentes</strong> &mdash; UFG &mdash; Instituto de Inform&aacute;tica |
+    Prof. Ronaldo Martins da Costa |
+    <span class="badge bg-light text-dark badge-tech">Django 4.2</span>
+    <span class="badge bg-light text-dark badge-tech">KNN (scikit-learn)</span>
+    <span class="badge bg-light text-dark badge-tech">SVM (scikit-learn)</span>
+    <span class="badge bg-light text-dark badge-tech">pandas</span>
+  </small>
+</div>
+
+<!-- CONTEUDO PRINCIPAL -->
+<div class="container-fluid mt-3 px-3">
+  <div class="row justify-content-center">
+
+    <!-- COLUNA PRINCIPAL -->
+    <div class="col-lg-8 col-md-10">
+
+      <div class="card border-0 shadow-sm mb-3">
+        <div class="card-header bg-white border-bottom py-3 text-center">
+          <h4 class="mb-1" style="color: var(--cor-primaria);">
+            &#x2699;&#xFE0F; Inicializa&ccedil;&atilde;o do Sistema
+          </h4>
+          <p class="text-muted mb-2 small">
+            O lan&ccedil;ador verificou todos os componentes necess&aacute;rios para abrir o APPSPEC.
+          </p>
+          <div class="status-pill success">
+            <span class="dot"></span>
+            Sistema iniciado com sucesso!
+          </div>
+        </div>
+        <div class="card-body p-3">
+          <h6 style="color: var(--cor-primaria);">&#x1F4CB; Log de Inicializa&ccedil;&atilde;o</h6>
+          <div class="log-box mt-2">
+<div class='log-line step'>[17:41:20] &gt;&gt;&gt; Verificando estrutura do projeto APPSPEC...</div>
+<div class='log-line ok'>[17:41:20] [OK] Diretorio do projeto encontrado: C:\Users\Desktop\OneDrive\Pos_Agentes_Inteligentes_UFG\Framework_Final\Enviado_para_Equipe\Apendicite</div>
+<div class='log-line step'>[17:41:20] &gt;&gt;&gt; Verificando ambiente virtual Python (.venv)...</div>
+<div class='log-line ok'>[17:41:20] [OK] Ambiente virtual ativo: Python 3.11.4</div>
+<div class='log-line step'>[17:41:20] &gt;&gt;&gt; Verificando dependencias do projeto...</div>
+<div class='log-line ok'>[17:41:22] [OK] Todas as dependencias estao instaladas.</div>
+<div class='log-line step'>[17:41:22] &gt;&gt;&gt; Verificando se o modelo ML ja foi treinado...</div>
+<div class='log-line ok'>[17:41:22] [OK] Modelo KNN ja treinado (ml/modelos/knn_model.joblib)</div>
+<div class='log-line step'>[17:41:22] &gt;&gt;&gt; Verificando porta 8000...</div>
+<div class='log-line warn'>[17:41:22] [!!] Porta 8000 ocupada. Liberando...</div>
+<div class='log-line step'>[17:41:24] &gt;&gt;&gt; Aplicando migracoes Django...</div>
+<div class='log-line ok'>[17:41:24] [OK] Banco de dados Django atualizado.</div>
+<div class='log-line step'>[17:41:24] &gt;&gt;&gt; Iniciando servidor Django em http://localhost:8000...</div>
+<div class='log-line err'>[17:42:14] [ERRO] Servidor nao respondeu em http://localhost:8000 apos 10 tentativas.</div>
+<div class='log-line warn'>[17:42:14] [!!] Tentando iniciar novamente...</div>
+<div class='log-line ok'>[17:42:20] [OK] Servidor iniciado na segunda tentativa!</div>
+<div class='log-line step'>[17:42:20] &gt;&gt;&gt; Sistema pronto! Abrindo tela de inicializacao...</div>
+
+          </div>
+        </div>
+      </div>
+
+      <a href="http://localhost:8000" class="btn-entrar mb-3" id="btnEntrar">
+        &#x1F3E5; Entrar no Sistema APPSPEC
+      </a>
+
+    </div>
+
+    <!-- PAINEL LATERAL -->
+    <div class="col-lg-3 col-md-10">
+      <div class="card border-primary mb-2">
+        <div class="card-header text-white py-2" style="background-color: var(--cor-primaria);">
+          <strong>&#x1F527; O que o lan&ccedil;ador fez?</strong>
+        </div>
+        <div class="card-body py-2 px-3">
+          <p class="small text-dark mb-2">
+            O lan&ccedil;ador executa <strong>8 etapas autom&aacute;ticas</strong> para garantir
+            que o sistema abre sem erros, independentemente do estado anterior.
+          </p>
+          <div class="alert alert-light p-2 mb-2" style="border-left: 3px solid var(--cor-pedagogica);">
+            <small class="text-muted"><strong>&#x1F4A1; Para entender:</strong><br>
+            Cada etapa verifica um componente do sistema. Se algo estiver faltando,
+            o lan&ccedil;ador corrige automaticamente antes de abrir.</small>
+          </div>
+        </div>
+      </div>
+      <div class="card card-etapas">
+        <div class="card-header py-2">
+          <small><strong>&#x1F4DA; Etapas Executadas</strong></small>
+        </div>
+        <ul class="list-group list-group-flush">
+          <li class="list-group-item">1. Estrutura do projeto</li>
+          <li class="list-group-item">2. Ambiente virtual (.venv)</li>
+          <li class="list-group-item">3. Depend&ecirc;ncias (pip)</li>
+          <li class="list-group-item">4. Modelo ML (setup.py)</li>
+          <li class="list-group-item">5. Porta 8000 (libera&ccedil;&atilde;o)</li>
+          <li class="list-group-item">6. Migra&ccedil;&otilde;es Django</li>
+          <li class="list-group-item">7. Servidor Django</li>
+          <li class="list-group-item">8. Tela de inicializa&ccedil;&atilde;o</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="text-center text-muted py-2 mt-3 border-top">
+  <small>
+    APPSPEC &mdash; Agentes Inteligentes &mdash; UFG &mdash; Instituto de Inform&aacute;tica &mdash;
+    Prof. Ronaldo Martins da Costa | Dataset: Regensburg Pediatric Appendicitis
+  </small>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<style>
+/* ═══════════════════════════════════════════════════════════════════════
+   SCIENTIFIC ARTICLE LAYOUT — WeasyPrint template
+   UFG / ABNT-inspired · two-column · A4
+   ═══════════════════════════════════════════════════════════════════════ */
+
+@page {
+  size: A4;
+  margin: 14mm 13mm 16mm 13mm;
+
+  @bottom-left  { content: "{{footer_left}}";  font-size:7pt; color:#555; font-family:'DejaVu Sans',sans-serif; }
+  @bottom-right { content: "{{footer_right}}"; font-size:7pt; color:#555; font-family:'DejaVu Sans',sans-serif; }
+  @bottom-center{ content: "Página " counter(page); font-size:7pt; color:#555; font-family:'DejaVu Sans',sans-serif; }
+}
+
+/* ── Reset ───────────────────────────────────────────────────────────── */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DejaVu Serif', Georgia, serif;
+  font-size: 8.5pt;
+  line-height: 1.38;
+  color: #111;
+  background: white;
+}
+
+/* ── Cabeçalho (largura total) ───────────────────────────────────────── */
+header {
+  width: 100%;
+  border-bottom: 2px solid #003366;
+  padding-bottom: 4pt;
+  margin-bottom: 6pt;
+}
+
+.article-title {
+  font-size: 12pt;
+  font-weight: bold;
+  color: #003366;
+  line-height: 1.3;
+  margin-bottom: 3pt;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+}
+
+.article-authors {
+  font-size: 8.5pt;
+  color: #333;
+  margin-bottom: 2pt;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+}
+
+.article-context {
+  font-size: 7.5pt;
+  color: #666;
+  font-style: italic;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+}
+
+/* ── Abstract (largura total) ────────────────────────────────────────── */
+.abstract-block {
+  width: 100%;
+  background: #f4f7fb;
+  border-left: 3px solid #003366;
+  padding: 5pt 7pt;
+  margin-bottom: 6pt;
+  font-size: 8pt;
+}
+
+.abstract-block strong {
+  display: block;
+  font-size: 8pt;
+  color: #003366;
+  margin-bottom: 3pt;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.5pt;
+}
+
+.abstract-text { line-height: 1.4; }
+
+.keywords {
+  margin-top: 4pt;
+  font-size: 8pt;
+  color: #444;
+}
+
+.keywords em { font-style: normal; font-weight: bold; }
+
+/* ── Corpo em duas colunas ───────────────────────────────────────────── */
+.two-col {
+  column-count: 2;
+  column-gap: 10pt;
+  column-rule: 0.5pt solid #ccc;
+  column-fill: auto;
+  width: 100%;
+  orphans: 3;
+  widows: 3;
+}
+
+/* ── Listas no corpo ────────────────────────────────────────────────── */
+.two-col ul { margin: 4pt 0 4pt 14pt; padding: 0; }
+.two-col ul li { margin-bottom: 2pt; text-align: justify; }
+.two-col ol { margin: 4pt 0 4pt 14pt; padding: 0; }
+.two-col ol li { margin-bottom: 2pt; }
+
+/* ── Títulos de seção ────────────────────────────────────────────────── */
+h2.sec-title {
+  font-size: 9.5pt;
+  font-weight: bold;
+  color: #003366;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.4pt;
+  margin-top: 7pt;
+  margin-bottom: 3pt;
+  border-bottom: 0.5pt solid #003366;
+  padding-bottom: 1pt;
+  break-after: avoid;
+}
+
+h3.subsec-title {
+  font-size: 8.5pt;
+  font-weight: bold;
+  color: #003366;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+  margin-top: 4pt;
+  margin-bottom: 2pt;
+  break-after: avoid;
+}
+
+/* ── Parágrafos ──────────────────────────────────────────────────────── */
+p {
+  text-align: justify;
+  text-indent: 0;
+  margin-bottom: 3pt;
+  hyphens: auto;
+}
+
+/* ── Figuras dentro de coluna (padrão) ───────────────────────────────── */
+figure.figure-col {
+  display: block;
+  width: 100%;
+  margin: 4pt 0;
+  break-inside: avoid;
+  text-align: center;
+}
+
+figure.figure-col img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ── Figuras que ocupam duas colunas ─────────────────────────────────── */
+figure.figure-span {
+  column-span: all;
+  display: block;
+  width: 100%;
+  margin: 5pt 0;
+  break-inside: avoid;
+  text-align: center;
+}
+
+figure.figure-span img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+figcaption {
+  font-size: 7.5pt;
+  color: #444;
+  margin-top: 3pt;
+  text-align: center;
+  font-style: italic;
+  line-height: 1.3;
+}
+
+/* ── Tabelas dentro de coluna ────────────────────────────────────────── */
+div.table-col {
+  width: 100%;
+  margin: 6pt 0;
+  break-inside: avoid;
+}
+
+/* ── Tabelas que ocupam duas colunas ─────────────────────────────────── */
+div.table-span {
+  column-span: all;
+  width: 100%;
+  margin: 8pt 0;
+  break-inside: avoid;
+}
+
+p.table-caption {
+  font-size: 7.5pt;
+  font-weight: bold;
+  color: #003366;
+  margin-bottom: 3pt;
+  text-indent: 0;
+  text-align: left;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 8pt;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+}
+
+thead tr { background: #003366; color: white; }
+thead th { padding: 3pt 5pt; text-align: center; font-weight: bold; }
+tbody tr:nth-child(even) { background: #eef2f7; }
+tbody td { padding: 2.5pt 5pt; text-align: center; border-bottom: 0.3pt solid #ccc; }
+tbody tr:last-child td { font-weight: bold; font-style: italic; }
+
+/* ── Referências ─────────────────────────────────────────────────────── */
+.references-block {
+  column-span: all;
+  margin-top: 10pt;
+  border-top: 1pt solid #003366;
+  padding-top: 5pt;
+}
+
+.references-block h2 {
+  font-size: 8.5pt;
+  color: #003366;
+  font-family: 'DejaVu Sans', Arial, sans-serif;
+  text-transform: uppercase;
+  margin-bottom: 5pt;
+}
+
+p.ref {
+  font-size: 7.5pt;
+  margin-bottom: 2pt;
+  text-indent: -12pt;
+  padding-left: 12pt;
+  text-align: left;
+  line-height: 1.35;
+}
+
+
+.ai-declaration {
+  column-span: all;
+  background: #fff8e1;
+  border: 1pt solid #f9a825;
+  border-radius: 2pt;
+  padding: 5pt 8pt;
+  margin: 8pt 0 4pt 0;
+  font-size: 8pt;
+  line-height: 1.4;
+}
+
+/* ── Utilitários ─────────────────────────────────────────────────────── */
+strong { font-weight: bold; }
+em     { font-style: italic; }
+sup    { font-size: 6pt; vertical-align: super; }
+sub    { font-size: 6pt; vertical-align: sub; }
+
+ul, ol { margin: 3pt 0 3pt 14pt; }
+li     { margin-bottom: 2pt; }
+
+</style>
+</head>
+<body>
+
+<!-- ═══ CABEÇALHO ═══════════════════════════════════════════════════════ -->
+<header>
+  <div class="article-title">{{title}}</div>
+  <div class="article-authors">{{authors}}</div>
+  <div class="article-context">{{context}}</div>
+</header>
+
+<!-- ═══ ABSTRACT ════════════════════════════════════════════════════════ -->
+<div class="abstract-block">
+  <strong>Resumo</strong>
+  <p class="abstract-text">{{abstract}}</p>
+  <p class="keywords"><em>Palavras-chave:</em> {{keywords}}</p>
+</div>
+
+<!-- ═══ CORPO EM DUAS COLUNAS ══════════════════════════════════════════ -->
+<div class="two-col">
+
+{{sections}}
+
+<!-- ═══ REFERÊNCIAS (span completo) ════════════════════════════════════ -->
+<div class="references-block">
+  <h2>Referências</h2>
+  {{references}}
+</div>
+
+</div><!-- .two-col -->
+</body>
+</html>

@@ -1,0 +1,210 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}APPSPEC — Diagnóstico de Apendicite{% endblock %}</title>
+    <meta name="description" content="Sistema de apoio ao diagnóstico de apendicite aguda — Disciplina de Agentes Inteligentes, UFG">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --cor-primaria:   #1a5276;
+            --cor-secundaria: #ffffff;
+            --cor-alerta:     #e74c3c;
+            --cor-moderado:   #f39c12;
+            --cor-seguro:     #27ae60;
+            --cor-pedagogica: #2e86c1;
+            --cor-fundo:      #f8f9fa;
+        }
+        body { background-color: var(--cor-fundo); font-size: 0.95rem; }
+        .navbar-appspec { background-color: var(--cor-primaria) !important; }
+        .disclaimer-clinico {
+            border: 3px solid var(--cor-alerta) !important;
+        }
+        .painel-pedagogico {
+            position: sticky;
+            top: 10px;
+            font-size: 0.88rem;
+        }
+        .painel-pedagogico .card-body { padding: 0.75rem; }
+        .painel-pedagogico h6 { font-size: 0.95rem; margin-bottom: 0.3rem; }
+        .painel-pedagogico p { margin-bottom: 0.4rem; }
+        .painel-pedagogico hr { margin: 0.4rem 0; }
+        .badge-tech { font-size: 0.72rem; }
+        .banner-disciplina {
+            background: linear-gradient(135deg, #1a5276 0%, #2e86c1 100%);
+            color: white;
+            border-radius: 0;
+        }
+        .content-area { min-height: calc(100vh - 200px); }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-appspec py-1">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'diagnostico:index' %}">
+                🏥 APPSPEC — Apendicite
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMain">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina_atual == 'index' %}active{% endif %}"
+                           href="{% url 'diagnostico:index' %}">🏥 Avaliar</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina_atual == 'avaliacao_modelo' %}active{% endif %}"
+                           href="{% url 'diagnostico:avaliacao_modelo' %}">📊 Métricas</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina_atual == 'como_funciona' %}active{% endif %}"
+                           href="{% url 'diagnostico:como_funciona' %}">❓ Como Funciona</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina_atual == 'historico' %}active{% endif %}"
+                           href="{% url 'diagnostico:historico' %}">📋 Histórico</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {% if pagina_atual == 'documentacao' %}active{% endif %}"
+                           href="{% url 'diagnostico:documentacao' %}">📚 Documentação</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BANNER DISCIPLINA -->
+    <div class="banner-disciplina text-center py-1">
+        <small>
+            🎓 <strong>{{ disciplina }}</strong> — {{ instituicao }} |
+            {{ professor }} |
+            {% for tech in tecnologias_usadas %}
+            <span class="badge bg-light text-dark badge-tech">{{ tech.nome }}</span>
+            {% endfor %}
+        </small>
+    </div>
+
+    <!-- GRID PRINCIPAL -->
+    <div class="container-fluid mt-2 px-3">
+        <div class="row">
+
+            <!-- CONTEÚDO PRINCIPAL (mais espaço) -->
+            <div class="col-lg-9 col-md-8 content-area">
+                {% block content %}{% endblock %}
+
+                <!-- NAVEGAÇÃO RÁPIDA — presente em TODAS as páginas -->
+                <div class="row mt-3 mb-2 g-2">
+                    <div class="col">
+                        <a href="{% url 'diagnostico:index' %}"
+                           class="btn {% if pagina_atual == 'index' %}btn-primary{% else %}btn-outline-primary{% endif %} w-100 btn-sm">
+                            🏥 Nova Avaliação
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'diagnostico:avaliacao_modelo' %}"
+                           class="btn {% if pagina_atual == 'avaliacao_modelo' %}btn-success{% else %}btn-outline-success{% endif %} w-100 btn-sm">
+                            📊 Métricas do Modelo
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'diagnostico:como_funciona' %}"
+                           class="btn {% if pagina_atual == 'como_funciona' %}btn-info text-white{% else %}btn-outline-info{% endif %} w-100 btn-sm">
+                            ❓ Como Funciona
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'diagnostico:historico' %}"
+                           class="btn {% if pagina_atual == 'historico' %}btn-warning{% else %}btn-outline-warning{% endif %} w-100 btn-sm">
+                            📋 Histórico
+                        </a>
+                    </div>
+                    <div class="col">
+                        <a href="{% url 'diagnostico:documentacao' %}"
+                           class="btn {% if pagina_atual == 'documentacao' %}btn-secondary{% else %}btn-outline-secondary{% endif %} w-100 btn-sm">
+                            📚 Documentação
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL PEDAGÓGICO LATERAL -->
+            <div class="col-lg-3 col-md-4">
+                <div class="card border-{{ painel.badge_cor|default:'primary' }} painel-pedagogico">
+                    <div class="card-header bg-{{ painel.badge_cor|default:'primary' }} text-white py-2">
+                        <strong>{{ painel.titulo|default:"🔧 O que está acontecendo?" }}</strong>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="text-{{ painel.badge_cor|default:'primary' }}">{{ painel.tecnologia_principal|default:"" }}</h6>
+                        <p class="small text-dark">{{ painel.descricao|default:"" }}</p>
+                        {% if painel.o_que_e %}
+                        <div class="alert alert-light p-2 mb-2" style="border-left: 3px solid var(--cor-pedagogica);">
+                            <small class="text-muted"><strong>💡 Para entender:</strong><br>{{ painel.o_que_e }}</small>
+                        </div>
+                        {% endif %}
+                        {% if painel.aula_referencia %}
+                        <small class="text-muted d-block mb-1">
+                            📖 <strong>Aula:</strong> {{ painel.aula_referencia }}
+                        </small>
+                        {% endif %}
+                        {% if painel.componente_codigo %}
+                        <small class="d-block">
+                            📂 <strong>Código:</strong> <code style="font-size:0.78rem">{{ painel.componente_codigo }}</code>
+                        </small>
+                        {% endif %}
+                    </div>
+                    {% if modelo_treinado %}
+                    <div class="card-footer py-1">
+                        <small>
+                            🎯 Acurácia: <strong>{{ acuracia_modelo }}%</strong>
+                            (acerta {{ acuracia_modelo }}% dos casos) |
+                            k = {{ k_modelo }} vizinhos
+                        </small>
+                    </div>
+                    {% else %}
+                    <div class="card-footer bg-warning py-1">
+                        <small>⚠️ Modelo não treinado — execute <code>python setup.py</code></small>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- TECNOLOGIAS DA DISCIPLINA -->
+                <div class="card mt-2">
+                    <div class="card-header py-2">
+                        <small><strong>📚 Tecnologias da Disciplina usadas neste trabalho</strong></small>
+                    </div>
+                    <div class="card-body py-1 px-2">
+                        {% for tech in tecnologias_usadas %}
+                        <div class="mb-2 p-2 rounded" style="background:#f8f9fa; border-left: 3px solid var(--bs-{{ tech.cor }});">
+                            <span class="badge bg-{{ tech.cor }}" style="font-size:0.72rem">{{ tech.nome }}</span>
+                            <br>
+                            <small class="text-dark">{{ tech.papel }}</small>
+                            {% if tech.arquivo %}
+                            <br><small class="text-muted">📂 <code style="font-size:0.72rem">{{ tech.arquivo }}</code></small>
+                            {% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center text-muted py-2 mt-3 border-top">
+        <small>
+            APPSPEC v{{ versao_sistema }} — {{ disciplina }} — {{ instituicao }} —
+            {{ professor }} |
+            Dataset: {{ dataset_nome }}
+        </small>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

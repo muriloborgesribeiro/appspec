@@ -1,0 +1,178 @@
+{% extends 'diagnostico/base.html' %}
+
+{% block title %}Documentação — APPSPEC{% endblock %}
+
+{% block content %}
+
+<!-- VISÃO GERAL -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">📄 Visão Geral do Projeto</h5>
+    </div>
+    <div class="card-body">
+        <p>{{ conteudo.documentacao.visao_geral.objetivo }}</p>
+        <table class="table table-borderless">
+            <tr><td><strong>Disciplina:</strong></td><td>{{ conteudo.documentacao.visao_geral.disciplina }}</td></tr>
+            <tr><td><strong>Professor:</strong></td><td>{{ conteudo.documentacao.visao_geral.professor }}</td></tr>
+            <tr><td><strong>Instituição:</strong></td><td>{{ conteudo.documentacao.visao_geral.instituicao }}</td></tr>
+        </table>
+    </div>
+</div>
+
+<!-- ARQUITETURA -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">🏗️ Arquitetura do Sistema (5 camadas)</h5>
+    </div>
+    <div class="card-body">
+        <ol>
+        {% for camada in conteudo.documentacao.arquitetura.camadas %}
+            <li>{{ camada }}</li>
+        {% endfor %}
+        </ol>
+    </div>
+</div>
+
+<!-- STACK TECNOLÓGICO -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">🔧 Stack Tecnológico</h5>
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered">
+            <thead class="table-light">
+                <tr><th>Biblioteca</th><th>Função no Sistema</th><th>Aula</th></tr>
+            </thead>
+            <tbody>
+            {% for tech in conteudo.documentacao.stack_tecnologico %}
+            <tr>
+                <td><strong>{{ tech.biblioteca }}</strong></td>
+                <td>{{ tech.funcao }}</td>
+                <td>{{ tech.aula }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- DATA LEAKAGE (conteúdo pedagógico) -->
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        <h5 class="mb-0">🔍 Data Leakage — Conteúdo Pedagógico</h5>
+    </div>
+    <div class="card-body">
+        <h6>{{ conteudo.data_leakage.titulo }}</h6>
+        <p><strong>Definição:</strong> {{ conteudo.data_leakage.definicao }}</p>
+        <p><strong>Caso detectado:</strong> {{ conteudo.data_leakage.caso_detectado }}</p>
+        <p><strong>Evidência:</strong> {{ conteudo.data_leakage.evidencia }}</p>
+
+        <h6>Colunas excluídas:</h6>
+        <ul>
+        {% for col in conteudo.colunas_excluidas %}
+            <li><code>{{ col }}</code></li>
+        {% endfor %}
+        </ul>
+
+        <small class="text-muted">{{ conteudo.data_leakage.referencia }}</small>
+    </div>
+</div>
+
+<!-- SELEÇÃO DE MODELO (conteúdo pedagógico) -->
+<div class="card mb-4 border-info">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">🎯 {{ conteudo.selecao_modelo.titulo }}</h5>
+    </div>
+    <div class="card-body">
+        <p><strong>Princípio:</strong> {{ conteudo.selecao_modelo.principio }}</p>
+        <p><strong>Critério:</strong> {{ conteudo.selecao_modelo.criterio }}</p>
+
+        <h6>Status possíveis:</h6>
+        <table class="table table-sm">
+        {% for status, desc in conteudo.selecao_modelo.status_possiveis.items %}
+            <tr class="{% if status == 'LIMPO' %}table-success{% elif status == 'RISCO' %}table-warning{% else %}table-danger{% endif %}">
+                <td><strong>{{ status }}</strong></td>
+                <td>{{ desc }}</td>
+            </tr>
+        {% endfor %}
+        </table>
+    </div>
+</div>
+
+<!-- ANTI-ALUCINAÇÃO -->
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">🛡️ 8 Mecanismos Anti-Alucinação</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+        {% for key, mec in conteudo.anti_alucinacao.items %}
+        <div class="col-md-6 mb-3">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h6>{{ mec.icone }} {{ mec.titulo }}</h6>
+                    <p class="small">{{ mec.descricao }}</p>
+                    <p class="small text-muted"><strong>Implementação:</strong> {{ mec.implementacao }}</p>
+                    <p class="small text-muted"><strong>Motivo:</strong> {{ mec.motivo }}</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- REFERÊNCIAS CLÍNICAS -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">📚 Referências Clínicas</h5>
+    </div>
+    <div class="card-body">
+        <ol>
+        {% for ref in conteudo.documentacao.referencias_clinicas %}
+        <li>
+            {{ ref.citacao }}<br>
+            <a href="https://doi.org/{{ ref.doi }}" target="_blank">DOI: {{ ref.doi }}</a><br>
+            <small class="text-muted">Uso: {{ ref.uso_no_sistema }}</small>
+        </li>
+        {% endfor %}
+        </ol>
+    </div>
+</div>
+
+<!-- REFERÊNCIAS TÉCNICAS -->
+<div class="card mb-4">
+    <div class="card-header bg-secondary text-white">
+        <h5 class="mb-0">🔬 Referências Técnicas (ML)</h5>
+    </div>
+    <div class="card-body">
+        <ol>
+        {% for ref in conteudo.documentacao.referencias_tecnicas %}
+        <li>
+            {{ ref.citacao }}<br>
+            <a href="https://doi.org/{{ ref.doi }}" target="_blank">DOI: {{ ref.doi }}</a><br>
+            <small class="text-muted">Uso: {{ ref.uso_no_sistema }}</small>
+        </li>
+        {% endfor %}
+        </ol>
+    </div>
+</div>
+
+<!-- LIMITAÇÕES -->
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0">⚠️ Limitações e Disclaimer</h5>
+    </div>
+    <div class="card-body">
+        <ul>
+        {% for lim in conteudo.documentacao.limitacoes %}
+            <li>{{ lim }}</li>
+        {% endfor %}
+        </ul>
+        <div class="alert alert-danger disclaimer-clinico mt-3">
+            {{ disclaimer_global }}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

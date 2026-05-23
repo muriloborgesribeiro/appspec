@@ -1,0 +1,849 @@
+{% extends 'diagnostico/base.html' %}
+{% load static %}
+
+{% block title %}Avaliação dos Modelos — APPSPEC{% endblock %}
+
+{% block content %}
+<h3>📊 Avaliação Comparativa: KNN vs SVM</h3>
+<p class="text-muted">Tecnologia: sklearn.metrics.confusion_matrix (ensinada na disciplina)</p>
+
+{% if metricas.modelo_disponivel %}
+
+<!-- MATRIZES DE CONFUSÃO LADO A LADO -->
+<div class="row g-3 mb-4">
+
+    <!-- KNN -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white py-2">
+                <strong>🤖 Matriz de Confusão — KNN (k={{ metricas.k_otimo }})</strong>
+                <button class="btn btn-sm btn-outline-light float-end" data-bs-toggle="modal" data-bs-target="#modalMatrizKNN">
+                    🔍 Expandir
+                </button>
+            </div>
+            <div class="card-body text-center py-2">
+                <img src="{% static 'diagnostico/img/confusion_matrix_knn.png' %}"
+                     alt="Matriz de Confusão do KNN"
+                     class="img-fluid"
+                     style="max-width: 100%; cursor: pointer;"
+                     data-bs-toggle="modal" data-bs-target="#modalMatrizKNN"
+                     onerror="this.src='{% static 'diagnostico/img/confusion_matrix.png' %}'; this.onerror=null;">
+            </div>
+        </div>
+    </div>
+
+    <!-- SVM -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header text-white py-2" style="background-color: #6f42c1;">
+                <strong>⚡ Matriz de Confusão — SVM (kernel linear)</strong>
+                <button class="btn btn-sm btn-outline-light float-end" data-bs-toggle="modal" data-bs-target="#modalMatrizSVM">
+                    🔍 Expandir
+                </button>
+            </div>
+            <div class="card-body text-center py-2">
+                <img src="{% static 'diagnostico/img/confusion_matrix_svm.png' %}"
+                     alt="Matriz de Confusão do SVM"
+                     class="img-fluid"
+                     style="max-width: 100%; cursor: pointer;"
+                     data-bs-toggle="modal" data-bs-target="#modalMatrizSVM"
+                     onerror="this.alt='Execute setup.py para gerar a imagem do SVM';">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- LEGENDA VP/FP/FN/VN -->
+<div class="alert alert-light py-2 mb-4" style="font-size:0.85rem">
+    <strong>VP</strong> = Verdadeiro Positivo (apendicite corretamente identificada) |
+    <strong>FP</strong> = Falso Positivo (saudável classificado como doente) |
+    <strong>FN</strong> = Falso Negativo (doente não detectado — <strong class="text-danger">o mais perigoso</strong>) |
+    <strong>VN</strong> = Verdadeiro Negativo (saudável corretamente identificado)
+</div>
+
+<!-- CURVAS ROC e PRECISION-RECALL (Aula 5, slides 21-24) -->
+{% if curvas_roc_pr %}
+<h4 class="mt-4 mb-3">📈 Curvas ROC e Precision-Recall</h4>
+<p class="text-muted small mb-3">
+    Tecnologia: sklearn.metrics.roc_curve, precision_recall_curve
+    (Aula 5, Prof. Ronaldo — Ref: Fawcett, 2006. DOI:10.1016/j.patrec.2005.10.010)
+</p>
+
+<!-- Curvas comparativas lado a lado -->
+<div class="row g-3 mb-4">
+    <!-- ROC Comparativa -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header bg-dark text-white py-2">
+                <strong>📉 Curva ROC Comparativa</strong>
+                <button class="btn btn-sm btn-outline-light float-end" data-bs-toggle="modal" data-bs-target="#modalROCComp">
+                    🔍 Expandir
+                </button>
+            </div>
+            <div class="card-body text-center py-2">
+                <img src="{% static 'diagnostico/img/roc_comparativa.png' %}"
+                     alt="Curva ROC Comparativa"
+                     class="img-fluid"
+                     style="max-width: 100%; cursor: pointer;"
+                     data-bs-toggle="modal" data-bs-target="#modalROCComp">
+            </div>
+        </div>
+    </div>
+
+    <!-- PR Comparativa -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header text-white py-2" style="background-color: #2e7d32;">
+                <strong>📊 Curva Precision-Recall Comparativa</strong>
+                <button class="btn btn-sm btn-outline-light float-end" data-bs-toggle="modal" data-bs-target="#modalPRComp">
+                    🔍 Expandir
+                </button>
+            </div>
+            <div class="card-body text-center py-2">
+                <img src="{% static 'diagnostico/img/pr_comparativa.png' %}"
+                     alt="Curva Precision-Recall Comparativa"
+                     class="img-fluid"
+                     style="max-width: 100%; cursor: pointer;"
+                     data-bs-toggle="modal" data-bs-target="#modalPRComp">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Tabela AUC -->
+<div class="card mb-4 border-success">
+    <div class="card-header bg-success text-white">
+        📊 Métricas AUC-ROC e Average Precision
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover text-center mb-3">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-start">Modelo</th>
+                    <th>AUC-ROC</th>
+                    <th>Avg Precision</th>
+                    <th>Limiar Ótimo (Youden)</th>
+                    <th>Sensib. no Limiar</th>
+                    <th>Especif. no Limiar</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for modelo, dados in curvas_roc_pr.items %}
+                <tr>
+                    <td class="text-start"><strong>{{ modelo|upper }}</strong></td>
+                    <td><strong>{{ dados.auc_roc }}</strong></td>
+                    <td>{{ dados.average_precision }}</td>
+                    <td>{{ dados.limiar_otimo }}</td>
+                    <td>{{ dados.sensibilidade_otima }}</td>
+                    <td>{{ dados.especificidade_otima }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <!-- GUIA PEDAGÓGICO EXPANDIDO -->
+        <div class="card border-info mb-3">
+            <div class="card-header bg-info text-white">
+                <strong>📖 Como Ler e Interpretar Estas Curvas</strong>
+                <span class="badge bg-dark float-end">Aula 5 — Prof. Ronaldo</span>
+            </div>
+            <div class="card-body small">
+
+                <!-- 1. Curva ROC -->
+                <h6 class="text-primary mt-1">📉 1. Curva ROC (Receiver Operating Characteristic)</h6>
+                <p>A curva ROC mostra a <strong>relação entre Sensibilidade e Taxa de Falso Positivo</strong> para todos os limiares de decisão possíveis (de 0.0 a 1.0).</p>
+                <ul>
+                    <li><strong>Eixo Y</strong> = Sensibilidade (TPR) — "De todos os doentes, quantos o modelo detectou?"</li>
+                    <li><strong>Eixo X</strong> = Taxa de Falso Positivo (FPR) — "De todos os saudáveis, quantos foram alarmes falsos?"</li>
+                    <li><strong>Linha diagonal pontilhada</strong> = classificador aleatório (jogar moeda). Todo modelo útil deve estar <em>acima</em> desta linha.</li>
+                    <li><strong>Canto superior esquerdo</strong> = classificador perfeito (Sensibilidade=100%, FPR=0%). Quanto mais a curva se aproxima deste canto, melhor.</li>
+                    <li><strong>Ponto vermelho</strong> = limiar ótimo encontrado pelo índice de Youden (J = Sensibilidade − FPR).</li>
+                </ul>
+
+                <!-- 2. AUC-ROC -->
+                <h6 class="text-primary">📐 2. AUC-ROC (Área Sob a Curva)</h6>
+                <p>O AUC resume o desempenho global do modelo em um <strong>único número de 0 a 1</strong>:</p>
+                <table class="table table-sm table-bordered text-center mb-2" style="max-width:500px">
+                    <thead class="table-light"><tr><th>AUC-ROC</th><th>Classificação</th><th>Interpretação</th></tr></thead>
+                    <tbody>
+                        <tr><td>0.90 — 1.00</td><td class="text-success"><strong>Excelente</strong></td><td>Discriminação quase perfeita</td></tr>
+                        <tr><td>0.80 — 0.89</td><td class="text-primary"><strong>Bom</strong></td><td>Boa capacidade discriminatória</td></tr>
+                        <tr><td>0.70 — 0.79</td><td class="text-warning"><strong>Regular</strong></td><td>Capacidade moderada</td></tr>
+                        <tr><td>0.50 — 0.69</td><td class="text-danger"><strong>Fraco</strong></td><td>Pouco melhor que o acaso</td></tr>
+                        <tr><td>0.50</td><td class="text-muted">Inútil</td><td>Equivale a jogar moeda</td></tr>
+                    </tbody>
+                </table>
+                <p class="mb-1"><strong>Neste estudo:</strong> SVM (AUC=0.92) tem discriminação <em>excelente</em>, KNN (AUC=0.84) é <em>bom</em>, e Alvarado (AUC=0.72) é apenas <em>regular</em> — mostrando que os modelos de ML superam o escore clínico tradicional.</p>
+
+                <hr class="my-2">
+
+                <!-- 3. Curva Precision-Recall -->
+                <h6 style="color:#2e7d32">📊 3. Curva Precision-Recall (PR)</h6>
+                <p>A curva PR é <strong>mais informativa que a ROC quando as classes são desbalanceadas</strong> (neste dataset: 59% apendicite vs 41% sem).</p>
+                <ul>
+                    <li><strong>Eixo Y</strong> = Precision (VPP) — "Quando o modelo diz 'apendicite', com que frequência acerta?"</li>
+                    <li><strong>Eixo X</strong> = Recall (Sensibilidade) — "De todos os casos reais de apendicite, quantos foram encontrados?"</li>
+                    <li><strong>Linha horizontal pontilhada</strong> = baseline (prevalência da doença). Todo modelo deve estar <em>acima</em> desta linha.</li>
+                    <li><strong>Average Precision (AP)</strong> = área sob a curva PR. Análogo ao AUC-ROC mas mais exigente com classes desbalanceadas.</li>
+                    <li><strong>Canto superior direito</strong> = perfeição (encontra todos os casos E nunca erra). Quanto mais a curva se estica para este canto, melhor.</li>
+                </ul>
+
+                <hr class="my-2">
+
+                <!-- 4. Limiar de Decisão -->
+                <h6 class="text-danger">🎯 4. O que é o Limiar de Decisão e por que ele importa?</h6>
+
+                <p><strong>Passo 1 — Entenda o limiar:</strong>
+                   Quando o modelo diz "probabilidade de apendicite = 72%", como ele decide se é apendicite ou não?
+                   Ele compara com um <strong>limiar</strong> (ponto de corte). Se a probabilidade for <strong>&ge; limiar</strong>, o modelo diz "apendicite".
+                   Se for <strong>&lt; limiar</strong>, diz "não apendicite".</p>
+
+                <p><strong>Passo 2 — O padrão do scikit-learn:</strong>
+                   Por padrão, o scikit-learn usa <strong>limiar = 0.50</strong> (50%).
+                   Ou seja: qualquer paciente com probabilidade &ge; 50% é classificado como apendicite.</p>
+
+                <p><strong>Passo 3 — O que a Curva ROC revela:</strong>
+                   A curva ROC testa <em>todos os limiares possíveis</em> (de 0.0 a 1.0) e mostra qual dá o melhor
+                   resultado. O <strong>ponto vermelho</strong> no gráfico é o <strong>limiar de Youden</strong> — o ponto que
+                   maximiza o <em>equilíbrio matemático</em> entre Sensibilidade e Especificidade.</p>
+
+                <p><strong>Passo 4 — Comparação: o que muda se trocarmos o limiar?</strong></p>
+                <p>As linhas <span class="badge bg-success">🟢 VERDES</span> = limiar <strong>usado hoje</strong> no APPSPEC (0.50).
+                   As linhas <span class="badge bg-warning text-dark">🟡 AMARELAS</span> = o que aconteceria <strong>se aplicássemos o Youden</strong> (cenário hipotético — <strong>não usado</strong>).</p>
+
+                <table class="table table-sm table-bordered text-center mb-3" style="max-width:750px">
+                    <thead class="table-dark">
+                        <tr>
+                            <th></th>
+                            <th>Modelo</th>
+                            <th>Limiar</th>
+                            <th>Sensibilidade<br><small>(detecta doentes)</small></th>
+                            <th>Especificidade<br><small>(evita alarmes falsos)</small></th>
+                            <th>Consequência Clínica</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-success">
+                            <td><strong>🟢</strong></td>
+                            <td>KNN</td><td><strong>0.50 — USADO HOJE</strong></td>
+                            <td><strong>81.8%</strong></td><td>66.0%</td>
+                            <td class="text-start small">Detecta 82 de cada 100 doentes</td>
+                        </tr>
+                        <tr class="table-warning">
+                            <td><strong>🟡</strong></td>
+                            <td>KNN</td><td>0.80 — Youden (hipotético)</td>
+                            <td class="text-danger"><strong>68.2%</strong> ↓13%</td><td>89.4% ↑</td>
+                            <td class="text-start small text-danger"><strong>Perderia 14 doentes a mais em 100</strong></td>
+                        </tr>
+                        <tr class="table-success">
+                            <td><strong>🟢</strong></td>
+                            <td>SVM</td><td><strong>0.50 — USADO HOJE</strong></td>
+                            <td><strong>80.3%</strong></td><td>80.9%</td>
+                            <td class="text-start small">Bom equilíbrio — detecta 80 de cada 100</td>
+                        </tr>
+                        <tr class="table-warning">
+                            <td><strong>🟡</strong></td>
+                            <td>SVM</td><td>0.69 — Youden (hipotético)</td>
+                            <td class="text-danger"><strong>78.8%</strong> ↓</td><td>97.9% ↑</td>
+                            <td class="text-start small">Quase elimina alarmes falsos, mas perde doentes</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <p><strong>Passo 5 — Por que o APPSPEC NÃO usa o limiar de Youden?</strong></p>
+
+                <div class="alert alert-danger py-2 mb-2" style="border-left: 5px solid #dc3545;">
+                    <strong>🏥 Contexto clínico decisivo:</strong>
+                    Em <strong>triagem de apendicite pediátrica</strong>, os dois tipos de erro têm custos muito diferentes:
+                    <table class="table table-sm table-bordered mt-2 mb-1 text-center" style="max-width:550px">
+                        <tr class="table-danger">
+                            <td><strong>Falso Negativo (FN)</strong></td>
+                            <td class="text-start">Criança com apendicite vai para casa &rarr; risco de <strong>perfuração e peritonite</strong></td>
+                            <td><strong>GRAVE</strong></td>
+                        </tr>
+                        <tr class="table-light">
+                            <td><strong>Falso Positivo (FP)</strong></td>
+                            <td class="text-start">Criança saudável faz exames adicionais &rarr; desconforto, mas <strong>sem risco de vida</strong></td>
+                            <td>Menor</td>
+                        </tr>
+                    </table>
+                    Como o custo de um FN é <strong>incomparavelmente maior</strong>, o APPSPEC
+                    <strong>mantém o limiar 0.50</strong> para priorizar a sensibilidade (não perder doentes).
+                </div>
+
+                <div class="alert alert-info py-2 mb-2">
+                    <strong>📖 Lição pedagógica (para a prova):</strong>
+                    <ol class="mb-0 mt-1">
+                        <li>O <strong>limiar de Youden</strong> é o ponto <em>matematicamente ótimo</em> — o <strong>ponto vermelho</strong> na curva ROC acima.</li>
+                        <li>Ele <strong>não deve ser aplicado automaticamente</strong>. O cientista de dados precisa avaliar o <em>custo dos erros</em> no contexto do problema.</li>
+                        <li>Em <strong>triagem médica</strong> (detectar doentes): preferir limiar <strong>mais baixo</strong> &rarr; mais sensibilidade.</li>
+                        <li>Em <strong>confirmação diagnóstica</strong> (evitar cirurgias desnecessárias): preferir limiar <strong>mais alto</strong> &rarr; mais especificidade.</li>
+                        <li>A Curva ROC <strong>mostra</strong> todas as opções; o <strong>especialista do domínio</strong> é quem decide qual usar.</li>
+                    </ol>
+                    <small class="text-muted">Ref: Youden W.J. (1950). Cancer, 3(1), 32-35. | Fawcett T. (2006). DOI:10.1016/j.patrec.2005.10.010</small>
+                </div>
+
+                <hr class="my-2">
+
+                <!-- 5. Como comparar modelos -->
+                <h6 class="text-dark">🏆 5. Como Comparar os Modelos nos Gráficos — Passo a Passo</h6>
+
+                <p><strong>Olhe o gráfico ROC Comparativa acima e siga estes passos:</strong></p>
+
+                <div class="card border-secondary mb-2">
+                    <div class="card-body py-2 small">
+                        <p class="mb-1"><strong>👉 Passo A — Onde está a perfeição?</strong>
+                           O <strong>canto superior esquerdo</strong> do gráfico ROC é o ponto perfeito (detecta 100% dos doentes com 0% de alarmes falsos).
+                           O modelo cuja curva chega <strong>mais perto deste canto</strong> é o melhor.</p>
+
+                        <p class="mb-1"><strong>👉 Passo B — Compare as curvas visualmente:</strong>
+                           No gráfico, veja que a curva <strong style="color:#6a1b9a">roxa (SVM)</strong> está
+                           <strong>mais acima e à esquerda</strong> que a <strong style="color:#1565c0">azul (KNN)</strong>,
+                           que por sua vez está acima da <strong style="color:#2e7d32">verde (Alvarado)</strong>.
+                           Isso significa: <strong>SVM &gt; KNN &gt; Alvarado</strong>.</p>
+
+                        <p class="mb-1"><strong>👉 Passo C — Confirme pelo AUC na legenda:</strong>
+                           O número entre parênteses na legenda confirma a ordem:
+                           <strong style="color:#6a1b9a">SVM (AUC=0.923)</strong> &gt;
+                           <strong style="color:#1565c0">KNN (AUC=0.838)</strong> &gt;
+                           <strong style="color:#2e7d32">Alvarado (AUC=0.719)</strong>.
+                           Quanto maior o AUC, melhor.</p>
+
+                        <p class="mb-0"><strong>👉 Passo D — Repita para a curva PR:</strong>
+                           Na curva Precision-Recall, a lógica é a mesma: a curva <strong>mais acima e à direita</strong> vence.
+                           Veja que a ordem se mantém:
+                           <strong style="color:#6a1b9a">SVM (AP=0.957)</strong> &gt;
+                           <strong style="color:#1565c0">KNN (AP=0.865)</strong> &gt;
+                           <strong style="color:#2e7d32">Alvarado (AP=0.759)</strong>.</p>
+                    </div>
+                </div>
+
+                <!-- Ranking final -->
+                <table class="table table-sm table-bordered text-center mb-2" style="max-width:700px">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Posição</th>
+                            <th>Modelo</th>
+                            <th>AUC-ROC</th>
+                            <th>Classificação</th>
+                            <th>O que isso significa</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="table-success">
+                            <td>🥇 1&ordm;</td>
+                            <td><strong style="color:#6a1b9a">SVM</strong></td>
+                            <td><strong>0.923</strong></td>
+                            <td><span class="badge bg-success">Excelente</span></td>
+                            <td class="text-start small">Discriminação quase perfeita — em 92% das vezes, distingue corretamente doente de saudável</td>
+                        </tr>
+                        <tr>
+                            <td>🥈 2&ordm;</td>
+                            <td><strong style="color:#1565c0">KNN</strong></td>
+                            <td><strong>0.838</strong></td>
+                            <td><span class="badge bg-primary">Bom</span></td>
+                            <td class="text-start small">Boa capacidade — acerta 84% das comparações entre doente e saudável</td>
+                        </tr>
+                        <tr class="table-warning">
+                            <td>🥉 3&ordm;</td>
+                            <td><strong style="color:#2e7d32">Alvarado</strong></td>
+                            <td>0.719</td>
+                            <td><span class="badge bg-warning text-dark">Regular</span></td>
+                            <td class="text-start small">Capacidade moderada — o escore clínico tradicional é superado pelos modelos de ML</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="alert alert-success py-2 mb-0">
+                    <strong>📌 Conclusão principal:</strong>
+                    Os modelos de Machine Learning (<strong>SVM</strong> e <strong>KNN</strong>) demonstram poder discriminatório <strong>superior</strong>
+                    ao escore clínico tradicional de <strong>Alvarado</strong>.
+                    Isso valida a proposta do APPSPEC: usar ML como <em>ferramenta de apoio</em> ao diagnóstico médico.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Curvas ROC individuais por modelo — com explicação -->
+<h5 class="mt-3 mb-3">🔬 Curvas ROC Individuais — Detalhamento por Modelo</h5>
+<p class="text-muted small mb-3">Clique em cada gráfico para expandir. Cada curva mostra o ponto ótimo de Youden (ponto vermelho) com a sensibilidade e especificidade naquele ponto.</p>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white py-2 small"><strong>🤖 KNN</strong> — AUC = 0.838</div>
+            <div class="card-body text-center py-1">
+                <img src="{% static 'diagnostico/img/roc_knn.png' %}" alt="ROC KNN" class="img-fluid" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modalROCKNN">
+            </div>
+            <div class="card-footer small py-1">
+                <strong>Leitura:</strong> Curva se afasta bem da diagonal (bom). O ponto vermelho mostra que no limiar ótimo, a sensibilidade seria 68% com especificidade 89%.
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header text-white py-2 small" style="background:#6f42c1"><strong>⚡ SVM</strong> — AUC = 0.923</div>
+            <div class="card-body text-center py-1">
+                <img src="{% static 'diagnostico/img/roc_svm.png' %}" alt="ROC SVM" class="img-fluid" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modalROCSVM">
+            </div>
+            <div class="card-footer small py-1">
+                <strong>Leitura:</strong> Curva quase toca o canto superior esquerdo — <strong>excelente</strong> discriminação. O SVM é o melhor modelo neste dataset.
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header text-white py-2 small" style="background:#2e7d32"><strong>🏥 Alvarado</strong> — AUC = 0.719</div>
+            <div class="card-body text-center py-1">
+                <img src="{% static 'diagnostico/img/roc_alvarado.png' %}" alt="ROC Alvarado" class="img-fluid" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modalROCAlv">
+            </div>
+            <div class="card-footer small py-1">
+                <strong>Leitura:</strong> Curva mais próxima da diagonal que os modelos de ML. O escore de Alvarado tem capacidade <em>regular</em> — limitação do método clínico tradicional.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Curvas PR individuais por modelo -->
+<h5 class="mt-3 mb-3">🔬 Curvas Precision-Recall Individuais — Detalhamento por Modelo</h5>
+<p class="text-muted small mb-3">A curva PR é mais exigente que a ROC com classes desbalanceadas. A linha horizontal pontilhada é a prevalência (60%). Modelos úteis ficam acima dela.</p>
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header bg-primary text-white py-2 small"><strong>🤖 KNN</strong> — AP = 0.865</div>
+            <div class="card-body text-center py-1">
+                <img src="{% static 'diagnostico/img/pr_knn.png' %}" alt="PR KNN" class="img-fluid" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modalPRKNN">
+            </div>
+            <div class="card-footer small py-1">
+                <strong>Leitura:</strong> Curva fica bem acima da baseline (60%). Mantém precision alta (~95%) até recall ~60%, depois cai gradualmente. Bom desempenho.
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header text-white py-2 small" style="background:#6f42c1"><strong>⚡ SVM</strong> — AP = 0.957</div>
+            <div class="card-body text-center py-1">
+                <img src="{% static 'diagnostico/img/pr_svm.png' %}" alt="PR SVM" class="img-fluid" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modalPRSVM">
+            </div>
+            <div class="card-footer small py-1">
+                <strong>Leitura:</strong> Precision = 100% até recall ~75% — quando o SVM diz "apendicite", <strong>quase nunca erra</strong>. Desempenho excepcional.
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header text-white py-2 small" style="background:#2e7d32"><strong>🏥 Alvarado</strong> — AP = 0.759</div>
+            <div class="card-body text-center py-1">
+                <img src="{% static 'diagnostico/img/pr_alvarado.png' %}" alt="PR Alvarado" class="img-fluid" style="cursor:pointer" data-bs-toggle="modal" data-bs-target="#modalPRAlv">
+            </div>
+            <div class="card-footer small py-1">
+                <strong>Leitura:</strong> Precision cai rapidamente com o aumento do recall. O Alvarado perde precisão ao tentar detectar mais casos — limitação do escore baseado em regras.
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- TABELA COMPARATIVA DE MÉTRICAS KNN vs SVM -->
+<div class="card mb-4 border-dark">
+    <div class="card-header bg-dark text-white">
+        📊 Comparação de Métricas: KNN vs SVM
+    </div>
+    <div class="card-body">
+        <table class="table table-bordered table-hover text-center mb-3">
+            <thead class="table-dark">
+                <tr>
+                    <th class="text-start">Métrica</th>
+                    <th>Fórmula</th>
+                    <th style="background:#1a5276">🤖 KNN</th>
+                    <th style="background:#6f42c1">⚡ SVM</th>
+                    <th>Significado Clínico</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start"><strong>Acurácia</strong></td>
+                    <td><code>(VP+VN)/Total</code></td>
+                    <td><strong>{% widthratio metricas.acuracia_teste 1 100 %}%</strong></td>
+                    <td><strong>{{ metricas_svm.acuracia_teste_pct|default:"—" }}</strong></td>
+                    <td class="text-start small">Taxa geral de acerto</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Sensibilidade</strong></td>
+                    <td><code>VP/(VP+FN)</code></td>
+                    <td>{{ metricas_knn_sens|default:"—" }}</td>
+                    <td>{{ metricas_svm_sens|default:"—" }}</td>
+                    <td class="text-start small">Capacidade de detectar doentes</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Especificidade</strong></td>
+                    <td><code>VN/(VN+FP)</code></td>
+                    <td>{{ metricas_knn_espec|default:"—" }}</td>
+                    <td>{{ metricas_svm_espec|default:"—" }}</td>
+                    <td class="text-start small">Capacidade de identificar saudáveis</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>VPP</strong></td>
+                    <td><code>VP/(VP+FP)</code></td>
+                    <td>{{ metricas_knn_vpp|default:"—" }}</td>
+                    <td>{{ metricas_svm_vpp|default:"—" }}</td>
+                    <td class="text-start small">Se diz "apendicite", qual a chance de ser verdade?</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>VPN</strong></td>
+                    <td><code>VN/(VN+FN)</code></td>
+                    <td>{{ metricas_knn_vpn|default:"—" }}</td>
+                    <td>{{ metricas_svm_vpn|default:"—" }}</td>
+                    <td class="text-start small">Se diz "não apendicite", qual a chance de ser verdade?</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- ANÁLISE PEDAGÓGICA AUTOMÁTICA -->
+        <div class="alert alert-info py-2 mb-0">
+            <strong>📝 Análise pedagógica:</strong>
+            <ul class="mb-0 mt-1 small">
+                <li>
+                    <strong>Sensibilidade</strong> é a métrica mais crítica neste contexto clínico:
+                    um Falso Negativo (FN) significa um paciente com apendicite que <strong>não foi detectado</strong>
+                    — potencialmente levando a perfuração e peritonite.
+                </li>
+                <li>
+                    <strong>Especificidade</strong> evita cirurgias desnecessárias:
+                    um Falso Positivo (FP) significa operar um paciente saudável sem necessidade.
+                </li>
+                <li>
+                    O modelo com <strong>maior sensibilidade</strong> é mais seguro para triagem
+                    (melhor errar para mais que para menos). O com <strong>maior especificidade</strong>
+                    é melhor para confirmação diagnóstica.
+                </li>
+                <li>
+                    Ambos foram treinados nos mesmos <strong>{{ metricas.n_pacientes }} pacientes</strong>
+                    (treino: {{ metricas.n_treino }} | teste: {{ metricas.n_teste }}) do dataset Regensburg,
+                    garantindo uma comparação justa.
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- MÉTRICAS TÉCNICAS DETALHADAS -->
+<div class="card mb-4">
+    <div class="card-header">Detalhes Técnicos dos Modelos</div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6 class="text-primary">🤖 KNN</h6>
+                <table class="table table-sm table-bordered">
+                    <tr><td><strong>Config selecionada</strong></td><td>{{ metricas.config_selecionada }}</td></tr>
+                    <tr><td><strong>k ótimo</strong></td><td>{{ metricas.k_otimo }} (mínimo clínico: {{ metricas.k_minimo_clinico }})</td></tr>
+                    <tr><td><strong>Acurácia teste</strong></td><td><strong>{% widthratio metricas.acuracia_teste 1 100 %}%</strong></td></tr>
+                    <tr><td><strong>Acurácia CV</strong></td><td>{% widthratio metricas.acuracia_cv 1 100 %}% (5-fold)</td></tr>
+                    <tr><td><strong>Features</strong></td><td>{{ metricas.features_total_usadas }}</td></tr>
+                    <tr><td><strong>Algoritmo</strong></td><td>KNeighborsClassifier</td></tr>
+                    <tr><td><strong>Referência</strong></td><td>Cover & Hart, 1967</td></tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <h6 style="color:#6f42c1">⚡ SVM</h6>
+                <table class="table table-sm table-bordered">
+                    <tr><td><strong>Kernel</strong></td><td>{{ metricas_svm.kernel|default:"linear" }}</td></tr>
+                    <tr><td><strong>Parâmetro C</strong></td><td>{{ metricas_svm.C|default:"10.0" }}</td></tr>
+                    <tr><td><strong>Acurácia teste</strong></td><td><strong>{{ metricas_svm.acuracia_teste_pct|default:"—" }}</strong></td></tr>
+                    <tr><td><strong>Acurácia treino</strong></td><td>{{ metricas_svm.acuracia_treino_pct|default:"—" }}</td></tr>
+                    <tr><td><strong>Features</strong></td><td>{{ metricas.features_total_usadas }}</td></tr>
+                    <tr><td><strong>Algoritmo</strong></td><td>SVC (probability=True)</td></tr>
+                    <tr><td><strong>Referência</strong></td><td>Cortes & Vapnik, 1995</td></tr>
+                </table>
+            </div>
+        </div>
+
+        {% if metricas.aviso_acuracia %}
+        <div class="alert alert-warning py-2">
+            <strong>⚠️ Aviso:</strong> {{ metricas.aviso_acuracia }}
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- DATA LEAKAGE -->
+{% if metricas.data_leakage_detectado %}
+<div class="card mb-4 border-danger">
+    <div class="card-header bg-danger text-white">
+        🔍 Data Leakage Detectado e Corrigido
+    </div>
+    <div class="card-body">
+        <p><strong>Colunas excluídas por leakage:</strong></p>
+        <ul>
+        {% for col in metricas.colunas_excluidas_leakage %}
+            <li><code>{{ col }}</code></li>
+        {% endfor %}
+        </ul>
+        <p class="text-muted">{{ metricas.motivo_descarte }}</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- CRITÉRIO DE SELEÇÃO -->
+<div class="card mb-4 border-info">
+    <div class="card-header bg-info text-white">
+        🎯 Critério de Seleção do Modelo
+    </div>
+    <div class="card-body">
+        <p><strong>Critério:</strong> {{ metricas.criterio_selecao }}</p>
+        <p>{{ metricas.motivo_selecao }}</p>
+        {% if metricas.status_configs %}
+        <table class="table table-sm">
+            <thead><tr><th>Config</th><th>Status</th></tr></thead>
+            <tbody>
+            {% for cfg, status in metricas.status_configs.items %}
+            <tr class="{% if status == 'LIMPO' %}table-success{% elif status == 'RISCO' %}table-warning{% else %}table-danger{% endif %}">
+                <td>{{ cfg }}</td>
+                <td>{{ status }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% endif %}
+    </div>
+</div>
+
+<!-- ORANGE3 -->
+<div class="card mb-4 border-warning">
+    <div class="card-header bg-warning text-dark">
+        <strong>🍊 Validação Visual com Orange3</strong>
+        <span class="badge bg-dark float-end">Ferramenta da Disciplina</span>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-light p-2 mb-3" style="border-left: 3px solid #f39c12;">
+            <small><strong>💡 O que é o Orange3?</strong> É uma ferramenta visual de análise de dados (ensinada na disciplina). Com ela você pode arrastar blocos para montar um pipeline de ML — sem escrever código. O workflow abaixo foi gerado automaticamente pelo <code>setup.py</code> para que você compare os resultados do KNN visualmente.</small>
+        </div>
+
+        <h6>Como usar:</h6>
+        <ol class="small">
+            <li>
+                <strong>Instale o Orange3</strong> (se ainda não tiver):
+                <pre class="bg-dark text-light p-2 rounded mt-1 mb-2"><code>pip install orange3</code></pre>
+            </li>
+            <li>
+                <strong>Abra o workflow gerado pelo sistema:</strong>
+                <pre class="bg-dark text-light p-2 rounded mt-1 mb-2"><code>orange-canvas orange/validacao_knn.ows</code></pre>
+            </li>
+            <li>
+                <strong>O que você vai ver:</strong>
+                <ul>
+                    <li>📂 Bloco <em>File</em> — carrega o dataset Regensburg processado</li>
+                    <li>🤖 Bloco <em>kNN</em> — configura o algoritmo com k={{ metricas.k_otimo }}</li>
+                    <li>🔄 Bloco <em>Test & Score</em> — faz cross-validation</li>
+                    <li>📊 Bloco <em>Confusion Matrix</em> — mostra a matriz de confusão interativa</li>
+                </ul>
+            </li>
+            <li>
+                <strong>Compare:</strong> os resultados do Orange3 devem bater com os do sistema acima (Acurácia ≈ {% widthratio metricas.acuracia_teste 1 100 %}%). Se baterem, o modelo está validado por duas ferramentas independentes.
+            </li>
+        </ol>
+
+        <small class="text-muted">
+            📂 Arquivo do workflow: <code>orange/validacao_knn.ows</code><br>
+            📂 Dataset processado: <code>ml/modelos/dataset_processado.csv</code> (gerado pelo setup.py)
+        </small>
+    </div>
+</div>
+
+<!-- MODAIS TELA CHEIA -->
+
+<!-- Modal KNN -->
+<div class="modal fade" id="modalMatrizKNN" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title">📊 Matriz de Confusão — KNN (k={{ metricas.k_otimo }})</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/confusion_matrix_knn.png' %}"
+                     alt="Matriz de Confusão do KNN"
+                     style="max-width: 100%; max-height: 75vh;"
+                     onerror="this.src='{% static 'diagnostico/img/confusion_matrix.png' %}';">
+            </div>
+            <div class="modal-footer py-1">
+                <small class="text-muted me-auto">💡 Clique com botão direito → "Salvar imagem como" para exportar</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal SVM -->
+<div class="modal fade" id="modalMatrizSVM" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white py-2" style="background-color: #6f42c1;">
+                <h5 class="modal-title">📊 Matriz de Confusão — SVM (kernel linear)</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/confusion_matrix_svm.png' %}"
+                     alt="Matriz de Confusão do SVM"
+                     style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <small class="text-muted me-auto">💡 Clique com botão direito → "Salvar imagem como" para exportar</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ROC Comparativa -->
+<div class="modal fade" id="modalROCComp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-dark text-white py-2">
+                <h5 class="modal-title">📉 Curva ROC Comparativa — Alvarado vs KNN vs SVM</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/roc_comparativa.png' %}" alt="ROC Comparativa" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <small class="text-muted me-auto">Ref: Fawcett T. (2006). DOI:10.1016/j.patrec.2005.10.010</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PR Comparativa -->
+<div class="modal fade" id="modalPRComp" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white py-2" style="background-color: #2e7d32;">
+                <h5 class="modal-title">📊 Curva Precision-Recall Comparativa</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/pr_comparativa.png' %}" alt="PR Comparativa" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <small class="text-muted me-auto">Ref: Fawcett T. (2006). DOI:10.1016/j.patrec.2005.10.010</small>
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ROC KNN -->
+<div class="modal fade" id="modalROCKNN" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title">📉 Curva ROC — KNN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/roc_knn.png' %}" alt="ROC KNN" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ROC SVM -->
+<div class="modal fade" id="modalROCSVM" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white py-2" style="background-color: #6f42c1;">
+                <h5 class="modal-title">📉 Curva ROC — SVM</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/roc_svm.png' %}" alt="ROC SVM" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal ROC Alvarado -->
+<div class="modal fade" id="modalROCAlv" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white py-2" style="background-color: #2e7d32;">
+                <h5 class="modal-title">📉 Curva ROC — Alvarado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/roc_alvarado.png' %}" alt="ROC Alvarado" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PR KNN -->
+<div class="modal fade" id="modalPRKNN" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white py-2">
+                <h5 class="modal-title">📊 Curva Precision-Recall — KNN</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/pr_knn.png' %}" alt="PR KNN" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PR SVM -->
+<div class="modal fade" id="modalPRSVM" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white py-2" style="background-color: #6f42c1;">
+                <h5 class="modal-title">📊 Curva Precision-Recall — SVM</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/pr_svm.png' %}" alt="PR SVM" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal PR Alvarado -->
+<div class="modal fade" id="modalPRAlv" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header text-white py-2" style="background-color: #2e7d32;">
+                <h5 class="modal-title">📊 Curva Precision-Recall — Alvarado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center" style="background: white;">
+                <img src="{% static 'diagnostico/img/pr_alvarado.png' %}" alt="PR Alvarado" style="max-width: 100%; max-height: 75vh;">
+            </div>
+            <div class="modal-footer py-1">
+                <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<div class="alert alert-warning">
+    <strong>⚠️ Modelo não avaliado.</strong> Execute <code>python setup.py</code> para treinar e avaliar o modelo.
+</div>
+{% endif %}
+
+{% endblock %}

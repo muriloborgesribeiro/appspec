@@ -1,0 +1,20 @@
+{% extends 'diagnostico/base.html' %}
+
+{% block title %}Erro — APPSPEC{% endblock %}
+
+{% block content %}
+<div class="card border-danger">
+    <div class="card-header bg-danger text-white">
+        ⚠️ Erro no processamento
+    </div>
+    <div class="card-body">
+        <h5>{{ erro }}</h5>
+        {% if detalhe %}
+        <p class="text-muted">{{ detalhe }}</p>
+        {% endif %}
+        <a href="{% url 'diagnostico:index' %}" class="btn btn-primary mt-3">
+            ← Voltar ao formulário
+        </a>
+    </div>
+</div>
+{% endblock %}

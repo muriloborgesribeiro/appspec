@@ -1,0 +1,383 @@
+{% extends 'diagnostico/base.html' %}
+
+{% block title %}Resultado — APPSPEC{% endblock %}
+
+{% block content %}
+
+<!-- DISCLAIMER CLÍNICO OBRIGATÓRIO — SEMPRE ACIMA DO RESULTADO -->
+<div class="alert alert-danger disclaimer-clinico py-2 mb-3">
+    ⚠️ <strong>AVISO OBRIGATÓRIO:</strong> Este é um sistema <strong>didático</strong> da disciplina de Agentes Inteligentes (UFG).
+    Os resultados abaixo <strong>NÃO</strong> são diagnóstico médico e <strong>NÃO</strong> devem ser usados para decisão clínica real.
+</div>
+
+<!-- RESULTADO TRIPLO: três cards lado a lado -->
+<div class="row g-3">
+
+    <!-- CARD ALVARADO SCORE -->
+    <div class="col-lg-4">
+        <div class="card border-{{ alvarado.cor }} h-100">
+            <div class="card-header bg-{{ alvarado.cor }} text-white py-2">
+                <strong>📊 Alvarado Score</strong>
+                <span class="badge bg-light text-dark float-end" style="font-size:0.7rem">Regra Clínica (1986)</span>
+            </div>
+            <div class="card-body">
+                <!-- O QUE É -->
+                <div class="alert alert-light p-2 mb-2" style="border-left: 3px solid #2e86c1;">
+                    <small><strong>💡 O que é:</strong> Regra clínica criada em 1986 que soma pontos para 8 sintomas e sinais. Não usa Machine Learning — é uma fórmula fixa que médicos usam no pronto-socorro.</small>
+                </div>
+
+                <div class="text-center my-2">
+                    <span class="display-5 fw-bold text-{{ alvarado.cor }}">{{ alvarado.score }}</span>
+                    <span class="text-muted fs-5">/ 10</span>
+                    <h5 class="text-{{ alvarado.cor }} mt-1 mb-0">{{ alvarado.label }}</h5>
+                </div>
+
+                <p class="small">{{ alvarado.interpretacao }}</p>
+                <p class="small"><strong>Conduta sugerida:</strong> {{ alvarado.conduta }}</p>
+
+                <!-- DETALHAMENTO POR CRITÉRIO -->
+                <table class="table table-sm table-bordered mb-2" style="font-size:0.78rem">
+                    <thead class="table-light">
+                        <tr><th>Critério (MANTRELS)</th><th class="text-center" style="width:50px">✓?</th><th class="text-center" style="width:45px">Pts</th></tr>
+                    </thead>
+                    <tbody>
+                    {% for item in alvarado.detalhamento %}
+                    <tr class="{% if item.presente %}table-success{% endif %}">
+                        <td><small>{{ item.criterio }}</small></td>
+                        <td class="text-center">{% if item.presente %}<strong>✓</strong>{% else %}—{% endif %}</td>
+                        <td class="text-center">{{ item.pontos }}/{{ item.pontos_max }}</td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="table-primary">
+                            <td><strong>TOTAL</strong></td>
+                            <td></td>
+                            <td class="text-center"><strong>{{ alvarado.score }}/10</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <small class="text-muted">
+                    📄 Ref: Alvarado, 1986 —
+                    <a href="https://doi.org/10.1016/S0196-0644(86)80468-2" target="_blank">DOI</a>
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- CARD KNN -->
+    <div class="col-lg-4">
+        {% if knn %}
+        <div class="card border-{% if knn.classe_predita == 1 %}danger{% else %}success{% endif %} h-100">
+            <div class="card-header bg-{% if knn.classe_predita == 1 %}danger{% else %}success{% endif %} text-white py-2">
+                <strong>🤖 KNN</strong>
+                <span class="badge bg-light text-dark float-end" style="font-size:0.7rem">scikit-learn</span>
+            </div>
+            <div class="card-body">
+                <!-- O QUE É -->
+                <div class="alert alert-light p-2 mb-2" style="border-left: 3px solid #2e86c1;">
+                    <small><strong>💡 O que é:</strong> Compara os dados com <strong>782 casos reais</strong> do Hospital de Regensburg. Encontra os <strong>{{ knn.k_vizinhos }} mais parecidos</strong> e verifica se tinham apendicite.</small>
+                </div>
+
+                <div class="text-center my-2">
+                    <span class="display-5 fw-bold">{{ knn.probabilidade_percentual }}</span>
+                    <h5 class="mt-1 mb-0">{{ knn.label_predita }}</h5>
+                </div>
+
+                <!-- COMO CALCULOU -->
+                <div class="card bg-light mb-2">
+                    <div class="card-body p-2">
+                        <small>
+                            <strong>Como calculou:</strong><br>
+                            1️⃣ Recebeu os dados clínicos<br>
+                            2️⃣ Comparou com 782 pacientes<br>
+                            3️⃣ Encontrou <strong>k={{ knn.k_vizinhos }}</strong> mais parecidos<br>
+                            4️⃣ Resultado: <strong>{{ knn.probabilidade_percentual }}</strong>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- MÉTRICAS TÉCNICAS -->
+                <table class="table table-sm table-bordered mb-2" style="font-size:0.78rem">
+                    <tr>
+                        <td><strong>Algoritmo</strong></td>
+                        <td>KNeighborsClassifier</td>
+                    </tr>
+                    <tr>
+                        <td><strong>k (vizinhos)</strong></td>
+                        <td>{{ knn.k_vizinhos }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Acurácia</strong></td>
+                        <td>{% widthratio knn.acuracia_modelo 1 100 %}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Confiança</strong></td>
+                        <td>
+                            <span class="badge bg-{% if knn.confianca == 'Alta' %}success{% elif knn.confianca == 'Média' %}warning text-dark{% else %}danger{% endif %}">
+                                {{ knn.confianca }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+
+                {% if knn.confianca == 'Baixa' or knn.confianca == 'Baixa -- resultado inconclusivo' %}
+                <div class="alert alert-warning py-1 mb-1">
+                    <small>⚠️ Resultado inconclusivo.</small>
+                </div>
+                {% endif %}
+
+                {% if knn.features_imputadas %}
+                <div class="alert alert-info py-1 mb-1">
+                    <small>📝 {{ knn.features_imputadas|length }} dados imputados por mediana.</small>
+                </div>
+                {% endif %}
+
+                <small class="text-muted">
+                    📄 KNN: Cover & Hart, 1967 —
+                    <a href="https://doi.org/10.1109/TIT.1967.1053964" target="_blank">DOI</a>
+                </small>
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-secondary h-100">
+            <div class="card-header bg-secondary text-white py-2">
+                <strong>🤖 KNN</strong>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted mt-3">⚠️ Modelo KNN não disponível.</p>
+                <p><code>python setup.py</code></p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- CARD SVM -->
+    <div class="col-lg-4">
+        {% if svm %}
+        <div class="card border-{% if svm.classe_predita == 1 %}danger{% else %}success{% endif %} h-100">
+            <div class="card-header bg-{% if svm.classe_predita == 1 %}danger{% else %}success{% endif %} text-white py-2" style="{% if svm.classe_predita == 1 %}background: linear-gradient(135deg, #c0392b, #e74c3c) !important{% else %}background: linear-gradient(135deg, #1e8449, #27ae60) !important{% endif %}">
+                <strong>⚡ SVM</strong>
+                <span class="badge bg-light text-dark float-end" style="font-size:0.7rem">scikit-learn</span>
+            </div>
+            <div class="card-body">
+                <!-- O QUE É -->
+                <div class="alert alert-light p-2 mb-2" style="border-left: 3px solid #8e44ad;">
+                    <small><strong>💡 O que é:</strong> O SVM busca a <strong>fronteira ótima</strong> que melhor separa pacientes com e sem apendicite no espaço de features. Usa o kernel <strong>{{ svm.kernel }}</strong> para encontrar padrões.</small>
+                </div>
+
+                <div class="text-center my-2">
+                    <span class="display-5 fw-bold">{{ svm.probabilidade_percentual }}</span>
+                    <h5 class="mt-1 mb-0">{{ svm.label_predita }}</h5>
+                </div>
+
+                <!-- COMO CALCULOU -->
+                <div class="card bg-light mb-2">
+                    <div class="card-body p-2">
+                        <small>
+                            <strong>Como calculou:</strong><br>
+                            1️⃣ Recebeu os dados clínicos<br>
+                            2️⃣ Projetou no espaço de features<br>
+                            3️⃣ Aplicou hiperplano de separação<br>
+                            4️⃣ Resultado: <strong>{{ svm.probabilidade_percentual }}</strong>
+                        </small>
+                    </div>
+                </div>
+
+                <!-- MÉTRICAS TÉCNICAS -->
+                <table class="table table-sm table-bordered mb-2" style="font-size:0.78rem">
+                    <tr>
+                        <td><strong>Algoritmo</strong></td>
+                        <td>SVC (Support Vector)</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kernel</strong></td>
+                        <td>{{ svm.kernel }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Param. C</strong></td>
+                        <td>{{ svm.C }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Acurácia</strong></td>
+                        <td>{% widthratio svm.acuracia_modelo 1 100 %}%</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Confiança</strong></td>
+                        <td>
+                            <span class="badge bg-{% if svm.confianca == 'Alta' %}success{% elif svm.confianca == 'Média' %}warning text-dark{% else %}danger{% endif %}">
+                                {{ svm.confianca }}
+                            </span>
+                        </td>
+                    </tr>
+                </table>
+
+                {% if svm.confianca == 'Baixa' or svm.confianca == 'Baixa -- resultado inconclusivo' %}
+                <div class="alert alert-warning py-1 mb-1">
+                    <small>⚠️ Resultado inconclusivo.</small>
+                </div>
+                {% endif %}
+
+                {% if svm.features_imputadas %}
+                <div class="alert alert-info py-1 mb-1">
+                    <small>📝 {{ svm.features_imputadas|length }} dados imputados por mediana.</small>
+                </div>
+                {% endif %}
+
+                <small class="text-muted">
+                    📄 SVM: Cortes & Vapnik, 1995 —
+                    <a href="https://doi.org/10.1007/BF00994018" target="_blank">DOI</a>
+                </small>
+            </div>
+        </div>
+        {% else %}
+        <div class="card border-secondary h-100">
+            <div class="card-header bg-secondary text-white py-2">
+                <strong>⚡ SVM</strong>
+            </div>
+            <div class="card-body text-center">
+                <p class="text-muted mt-3">⚠️ Modelo SVM não disponível.</p>
+                <p><code>python setup.py</code></p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- COMPARAÇÃO PEDAGÓGICA TRIPLA -->
+<div class="card mt-3 border-info">
+    <div class="card-header bg-info text-white py-2">
+        <strong>📚 Comparação pedagógica: Regra Fixa vs KNN vs SVM</strong>
+    </div>
+    <div class="card-body py-2">
+        <div class="row">
+            <div class="col-md-4">
+                <small>
+                    <strong>Alvarado Score (regra fixa):</strong><br>
+                    • Criado por um médico em 1986<br>
+                    • Sempre dá o mesmo resultado para os mesmos dados<br>
+                    • Não precisa de dataset — é uma fórmula pronta<br>
+                    • Usa apenas 8 critérios clínicos<br>
+                    • <span class="badge bg-success">100% interpretável</span>
+                </small>
+            </div>
+            <div class="col-md-4">
+                <small>
+                    <strong>KNN (Machine Learning — instância):</strong><br>
+                    • Aprendeu dos dados de 782 pacientes reais<br>
+                    • Compara por <em>similaridade</em> (distância euclidiana)<br>
+                    • Pode melhorar se receber mais dados<br>
+                    • Precisa de treino e dataset para funcionar<br>
+                    • <span class="badge bg-warning text-dark">Parcialmente interpretável</span>
+                </small>
+            </div>
+            <div class="col-md-4">
+                <small>
+                    <strong>SVM (Machine Learning — margem):</strong><br>
+                    • Busca a melhor <em>fronteira de separação</em><br>
+                    • Usa kernel para mapear dados em dimensão superior<br>
+                    • Robusto a outliers (vetores de suporte)<br>
+                    • Treinado nos mesmos 782 pacientes<br>
+                    • <span class="badge bg-danger">Baixa interpretabilidade</span>
+                </small>
+            </div>
+        </div>
+
+        <!-- TABELA COMPARATIVA DE RESULTADOS -->
+        {% if knn and svm %}
+        <hr class="my-2">
+        <table class="table table-sm table-bordered text-center mb-2" style="font-size:0.82rem">
+            <thead class="table-dark">
+                <tr>
+                    <th>Aspecto</th>
+                    <th>Alvarado</th>
+                    <th>KNN</th>
+                    <th>SVM</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-start"><strong>Tipo</strong></td>
+                    <td>Regra determinística</td>
+                    <td>ML — baseado em instância</td>
+                    <td>ML — baseado em margem</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>O que produz</strong></td>
+                    <td>Score de 0 a 10 <sup>¹</sup></td>
+                    <td>Probabilidade direta <sup>²</sup></td>
+                    <td>Probabilidade estimada <sup>³</sup></td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Resultado</strong></td>
+                    <td><span class="badge bg-{{ alvarado.cor }}">{{ alvarado.label }}</span></td>
+                    <td>{{ knn.probabilidade_percentual }}</td>
+                    <td>{{ svm.probabilidade_percentual }}</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Acurácia</strong></td>
+                    <td><span class="text-muted">— <sup>¹</sup></span></td>
+                    <td>{% widthratio knn.acuracia_modelo 1 100 %}%</td>
+                    <td>{% widthratio svm.acuracia_modelo 1 100 %}%</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Confiança</strong></td>
+                    <td><span class="text-muted">— <sup>¹</sup></span></td>
+                    <td><span class="badge bg-{% if knn.confianca == 'Alta' %}success{% elif knn.confianca == 'Média' %}warning text-dark{% else %}danger{% endif %}">{{ knn.confianca }}</span></td>
+                    <td><span class="badge bg-{% if svm.confianca == 'Alta' %}success{% elif svm.confianca == 'Média' %}warning text-dark{% else %}danger{% endif %}">{{ svm.confianca }}</span></td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Aprende dos dados?</strong></td>
+                    <td>❌ Não</td>
+                    <td>✅ Sim</td>
+                    <td>✅ Sim</td>
+                </tr>
+                <tr>
+                    <td class="text-start"><strong>Referência</strong></td>
+                    <td>Alvarado, 1986</td>
+                    <td>Cover & Hart, 1967</td>
+                    <td>Cortes & Vapnik, 1995</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- EXPLICAÇÃO: POR QUE ALVARADO TEM "—" E COMO CADA MODELO GERA PROBABILIDADE -->
+        <div class="alert alert-light border py-2 mb-0" style="font-size:0.82rem; border-left: 4px solid #2e86c1 !important;">
+            <strong>💡 Por que o Alvarado tem "—" em Acurácia e Confiança?</strong>
+            <p class="mb-1 mt-1">
+                Porque o Alvarado <strong>não é um classificador</strong> — é uma <strong>régua de pontuação</strong>.
+                Ele produz um score de 0 a 10 (contagem de critérios presentes), não uma predição binária
+                ("tem" ou "não tem"). Para calcular acurácia, seria preciso escolher um ponto de corte
+                arbitrário (ex: score ≥ 7 = "apendicite"), e cada corte dá uma acurácia diferente.
+                O KNN e SVM aprendem o corte sozinhos a partir dos dados.
+            </p>
+
+            <strong>💡 Como cada modelo gera (ou não) o percentual?</strong>
+            <ul class="mb-0 mt-1" style="padding-left: 1.2rem;">
+                <li>
+                    <sup>¹</sup> <strong>Alvarado:</strong> <strong>Não gera percentual.</strong> O score 8 não significa "80% de chance"
+                    — significa que 8 dos 10 critérios estão presentes. A conversão score→probabilidade só existe
+                    em estudos epidemiológicos (Ohle et al., 2011), não no modelo.
+                </li>
+                <li>
+                    <sup>²</sup> <strong>KNN:</strong> A probabilidade é <strong>nativa e intuitiva</strong>.
+                    Se k={{ knn.k_vizinhos }} e uma quantidade deles tinham apendicite → a proporção = <strong>{{ knn.probabilidade_percentual }}</strong>.
+                    É uma contagem direta de proporção.
+                </li>
+                <li>
+                    <sup>³</sup> <strong>SVM:</strong> A probabilidade <strong>não é nativa</strong>.
+                    O SVM calcula distância ao hiperplano, não probabilidade.
+                    O percentual é uma <strong>estimativa</strong> via <em>Platt Scaling</em>
+                    (Platt, 1999) — uma regressão logística ajustada sobre as distâncias.
+                </li>
+            </ul>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+
+{% endblock %}
+

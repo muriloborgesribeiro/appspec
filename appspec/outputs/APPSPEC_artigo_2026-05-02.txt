@@ -1,0 +1,274 @@
+APPSPEC: Sistema de Apoio ao Diagnóstico de Apendicite Combinando Escore de Alvarado, K-Nearest Neighbors e Support Vector Machine — Abordagem Pedagógica para Sistemas Clínicos Inteligentes
+Francisco Neri · Anahi Philbois · Murilo Borges Ribeiro
+Instituto de Informática · Universidade Federal de Goiás (UFG)
+Trabalho de Conclusão · Disciplina de Frameworks · Prof. Ronaldo Martins da Costa · 2026
+
+
+RESUMO
+CONTEXTO:
+O diagnóstico de apendicite aguda permanece desafiador na prática clínica, com escores tradicionais como o de Alvarado apresentando especifi‐ cidade limitada, o que contribui para taxas elevadas de apendicectomias negativas [5]. Algoritmos de aprendizado de máquina têm demonstra‐ do potencial para aprimorar a acurácia diagnóstica em contextos clínicos semelhantes.
+OBJETIVO:
+
+Desenvolver e validar modelos de aprendizado de máquina para diagnóstico de apendicite aguda, comparando seu desempenho com o escore de
+Alvarado tradicional, utilizando dados clínicos e laboratoriais estruturados.
+MÉTODOS:
+Estudo retrospectivo utilizando o dataset Regensburg Pediatric Appendicitis [3], compreendendo 782 registros pediátricos, dos quais 753 fo‐ ram considerados  válidos  após  exclusão de dados  incompletos. O conjunto foi estratificado em treino (n=527), validação (n=113) e teste (n=113). Foram avaliadas 32 variáveis tabulares clínicas e laboratoriais, com exclusão de 7 variáveis por risco de data leakage. Dois algoritmos foram implementados: K-Nearest Neighbors (KNN) com k=5 [6] e Support Vector Machine (SVM) com kernel linear e C=10.0 [7]. O desempe‐ nho foi comparado ao escore de Alvarado com ponto de corte ≥5.
+RESULTADOS:
+O modelo SVM alcançou acurácia de 80,5%, sensibilidade de 80,3% e especificidade de 80,9%. O modelo KNN obteve acurácia de 75,2%, sen‐ sibilidade de 81,8% e especificidade de 66,0% (VP=54, FP=16, FN=12, VN=31). O escore de Alvarado apresentou acurácia de 68,1%, sensibili‐ dade de 83,3% e especificidade de 46,8%. O SVM superou o escore tradicional em 12,4 pontos percentuais na acurácia e 34,0 pontos percentu‐ ais na especificidade.
+CONCLUSÃO:
+
+Os modelos de aprendizado de máquina, particularmente o SVM, demonstraram desempenho superior ao escore de Alvarado, especialmente em especificidade. Estes resultados sugerem potencial para redução de procedimentos cirúrgicos desnecessários, embora validação prospectiva em ambiente clínico seja necessária antes da implementação.
+Palavras-chave: Sistemas Clínicos Inteligentes · K-Nearest Neighbors · Support Vector Machine · Escore de Alvarado · Django · Apoio ao Di‐
+agnóstico · Apendicite
+
+
+1. INTRODUÇÃO
+
+Apendicite aguda é a principal causa de abdome agudo cirúrgico em crianças e adultos jovens, com incidência de 7–8% ao longo da vida [1]. O diagnóstico tardio eleva o risco de perfuração para mais de 80% em menores de cinco anos, podendo evoluir para peritonite e sepse [2].
+O Escore de Alvarado (1986) [1] sistematiza oito critérios clínico-laboratoriais em 0–10 pontos: migração da dor para a fossa ilíaca direita (FID), anorexia, náuseas/vômitos, dor à palpação em FID (peso 2), sinal de Blumberg, temperatura >37,3°C, leucocitose >10.000/mm³ (peso 2) e neutrofilia. Escores ≤4 permitem alta com sensibilidade 99% (corte 5); ≥7 indicam cirurgia imediata (especificidade 81%, corte 7) [5]. A meta-análise de Ohle et al. [5] confirmou esses pontos de corte em 42 estudos independentes.
+O K-Nearest Neighbors (KNN) [6] classifica casos pela votação dos k vizinhos mais próximos no espaço euclidiano de features — geome‐ tricamente interpretável e adequado a datasets de médio porte. O Support Vector Machine (SVM) [7] encontra o hiperplano de máxima margem entre as classes, com robustez reconhecida em dados clínicos tabulares. Estudos recentes aplicaram ambos em diagnóstico de apendicite com acurácia de 64–84% em dados clínicos [8, 9].
+O APPSPEC integra os três métodos — Escore de Alvarado, KNN e SVM — em plataforma web com duplo objetivo: prover estimativa de risco de apendicite e demonstrar pedagogicamente Django, scikit-learn, pandas, joblib e Orange3.
+
+2. MATERIAIS E MÉTODOS
+
+Esta seção detalha o percurso metodológico adotado, desde a caracterização do conjunto de dados até os critérios de avaliação dos classi‐
+ficadores, assegurando reprodutibilidade e transparência em cada etapa do desenvolvimento.
+
+2.1 Conjunto de Dados
+O estudo utilizou o conjunto de dados pediátrico de apendicite do Hospital Infantil St. Hedwig, Regensburg, Alemanha, disponibilizado publicamente no UCI Machine Learning Repository sob identificador 938 [3]. A coorte compreende 782 pacientes pediátricos (faixa etária 0–18 anos) atendidos entre 2016 e 2021, tendo sido coletada sob protocolo ético aprovado (n.° 18-1063-101).
+O conjunto original contém 53 variáveis clínicas e laboratoriais, incluindo:
+
+• Dados demográficos: idade e sexo
+
+
+
+Disciplina · Frameworks · UFG · 2026                                                                           Página 1                                                                                 APPSPEC · Apoio ao Diagnóstico
+• Parâmetros   hematológicos:  WBC_Count,   RBC_Count,   Hemoglobin,   RDW,   Thrombocyte_Count,   Neutrophil_Percentage, Neutrophilia
+• Marcadores inflamatórios: CRP (proteína C-reativa)
+• Exame de urina: Ketones_in_Urine, RBC_in_Urine, WBC_in_Urine
+• Sinais e sintomas clínicos: localização da dor, migração, náusea, vômito, febre, entre outros
+
+2.2 Preparação e Pré-processamento
+O pré-processamento seguiu diretrizes rigorosas para evitar data leakage [10], fenômeno no qual informações do desfecho contaminam o treinamento, gerando estimativas de desempenho artificialmente infladas. Foram excluídas 7 variáveis:
+• Alvarado_Score: gerou acurácia artificial de 95,6% em testes preliminares — leakage direto do desfecho
+• Paediatric_Appendicitis_Score: escore composto que incorpora o diagnóstico final
+• Diagnosis: variável-alvo da predição, utilizada apenas como rótulo de classe
+• Management, Length_of_Stay, Severity: variáveis disponíveis apenas após a decisão diagnóstica
+• Segmented_Neutrophils: proporção crítica de valores ausentes (~93%), inviabilizando imputação confiável
+
+Dos 782 registros originais, 29 foram excluídos por apresentarem valores ausentes (NaN) em múltiplas variáveis críticas simultaneamen‐ te, resultando em N = 753 pacientes válidos para análise. Os 2.543 valores ausentes remanescentes foram tratados por imputação pela mediana, técnica robusta a outliers. Subsequentemente, todas as variáveis numéricas foram normalizadas para o intervalo [0, 1] mediante MinMaxScaler, assegurando equidade de escala entre features de diferentes magnitudes.
+2.3 Algoritmos de Classificação
+Dois algoritmos supervisionados foram implementados, selecionados por sua complementaridade conceitual e interpretabilidade:
+K-Nearest Neighbors (KNN) [6]: algoritmo baseado em instâncias que classifica novos casos pela votação majoritária dos k vizinhos mais próximos no espaço de features. A implementação utilizou KNeighborsClassifier da biblioteca scikit-learn [4], com distância euclidia‐ na como métrica de similaridade. O hiperparâmetro k foi otimizado mediante validação cruzada 5-fold sobre o conjunto de treinamento, avaliando candidatos k ∈ {3, 5, 7, 9, 11}, com k mínimo fixado em 3 para evitar instabilidade. A configuração ótima (Config F, 32 featu‐ res) convergiu para k = 5, alcançando acurácia de 75,2%. Em contraste, a Config E (8 features selecionadas) obteve melhor desempenho com k = 11, atingindo 69,5% — diferença atribuída ao conjunto distinto de features e ao comportamento do algoritmo em espaços de di‐ mensionalidade diversa, não isoladamente ao valor de k.
+Support Vector Machine (SVM) [7]: algoritmo que busca o hiperplano de separação ótima entre classes, maximizando a margem en‐ tre os vetores de suporte. Utilizou-se SVC da biblioteca scikit-learn [4] com kernel linear e parâmetro de regularização C = 10.0. O pa‐ râmetro probability=True foi habilitado para permitir calibração de probabilidades via Platt Scaling, possibilitando ajustes de limiares de decisão clínica.
+2.4 Arquitetura da Plataforma
+A plataforma educacional foi desenvolvida em Django 4.2 seguindo o padrão arquitetural MVT (Model-View-Template), com persistência em SQLite. A camada de predição integra modelos treinados via scikit-learn [4], incorporando funcionalidades pedagógicas para visuali‐ zação do processo decisório.
+2.5 Avaliação e Métricas
+O conjunto de dados (N = 753) foi particionado em três subconjuntos mediante amostragem estratificada, preservando a proporção de classes:
+• Treinamento: n = 527 (70%) — aprendizado dos parâmetros do modelo
+• Validação interna: n = 113 (15%) — seleção de hiperparâmetros via validação cruzada
+• Teste retido: n = 113 (15%) — avaliação final não enviesada
+
+As métricas primárias incluíram acurácia, sensibilidade, especificidade, valor preditivo positivo (VPP) e valor preditivo negativo (VPN). Os classificadores KNN e SVM foram comparados ao escore de Alvarado [1] no mesmo conjunto de teste. O conjunto de teste foi mantido em hold-out rigoroso, garantindo estimativa não enviesada do desempenho em dados genuinamente não vistos.
+
+3. RESULTADOS
+
+O conjunto de teste compreendeu 113 pacientes, correspondendo a 15% da amostra total de 753 casos do dataset Regensburg. A prevalên‐ cia de apendicite neste subconjunto foi de 58,4% (66 casos positivos e 47 negativos), proporção compatível com a distribuição original do dataset e adequada para avaliação comparativa dos classificadores.
+Tabela 1 apresenta a comparação consolidada das métricas de desempenho entre os três métodos avaliados:
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Disciplina · Frameworks · UFG · 2026                                                                           Página 2                                                                                 APPSPEC · Apoio ao Diagnóstico
+Tabela 1. Comparação de desempenho no conjunto de teste (N=113). *Config F: LIMPO, k=5, n=527. †Data leakage confirmado.
+
+Modelo / Config                                    Acurácia                 Sensib.                 Especif.                   VPP                    VPN
+
+Alvarado Score (corte ≥5)                                 68,1%                     83,3%                    46,8%                   68,8%                 66,7% KNN Config E (7 individuais + Free, k=11)                    69,5%                        —                           —                          —                        —
+KNN Config F* (k=5)                                     75,2%                     81,8%                    66,0%                   77,1%                 72,1% SVM (linear, C=10.0)                                    80,5%                     80,3%                    80,9%                   85,5%                 74,5%
+Config D (descartada)†                                 95,6%                        —                           —                          —                        —
+
+O classificador SVM com kernel linear e parâmetro de regularização C=10,0 obteve a maior acurácia global entre os métodos avaliados, alcançando 80,5%. A análise da matriz de confusão (Figura 2) revelou 53 verdadeiros positivos, 38 verdadeiros negativos, 9 falsos posi‐ tivos e 13 falsos negativos. Este modelo apresentou equilíbrio entre sensibilidade (80,3%) e especificidade (80,9%), com valor preditivo po‐ sitivo de 85,5% e valor preditivo negativo de 74,5%.
+Figura 2. Matriz de Confusão do SVM (kernel=linear, C=10.0, N=113). VP=53, FP=9, FN=13, VN=38. Acurácia 80,5%, sensibilidade 80,3%, especificidade
+80,9%.
+
+O classificador KNN com k=5 vizinhos alcançou acurácia de 75,2%, com distribuição assimétrica entre as métricas de detecção. Conforme ilustrado na Figura 1, o modelo identificou corretamente 54 casos de apendicite (verdadeiros positivos) e 31 casos negativos (verdadeiros negativos), porém apresentou 16 falsos positivos e 12 falsos negativos. A sensibilidade de 81,8% superou a especificidade de 66,0%, indi‐ cando maior capacidade de identificar casos positivos em detrimento da exclusão de negativos.
+
+
+
+
+
+
+
+
+
+
+
+
+
+Disciplina · Frameworks · UFG · 2026                                                                           Página 3                                                                                 APPSPEC · Apoio ao Diagnóstico
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figura 1. Matriz de Confusão do KNN no conjunto de teste (N=113). Diagonal (acertos): 31 pacientes sem apendicite + 54 com apendicite = 85 corretos
+(75,2%). Erros: 16 falsos positivos e 12 falsos negativos.
+
+O escore de Alvarado com ponto de corte ≥5 apresentou acurácia de 68,1%, a menor entre os três métodos. Embora tenha alcançado sen‐ sibilidade elevada (83,3%), sua especificidade foi de apenas 46,8%, resultando em 25 falsos positivos contra 22 verdadeiros negativos. Os valores preditivos positivo e negativo foram 68,8% e 66,7%, respectivamente.
+A comparação entre os métodos evidenciou ganhos expressivos dos classificadores de aprendizado de máquina sobre o escore clínico tra‐
+dicional:
+
+• SVM  versus  Alvarado: ganho  de  12,4  pontos  percentuais  em  acurácia  (80,5%  versus  68,1%)  e  34,0  pontos  percentuais  em especificidade (80,9% versus 46,8%), com redução proporcional de falsos positivos.
+• KNN  versus  Alvarado: ganho  de  7,1  pontos  percentuais  em  acurácia  (75,2%  versus  68,1%)  e  19,1  pontos  percentuais  em especificidade (66,0% versus 46,8%).
+Durante a fase exploratória, uma configuração alternativa (Config D) que incluía variáveis derivadas do próprio escore de Alvarado apre‐ sentou acurácia aparente de 95,6%. Esta configuração foi descartada após identificação de data leakage, uma vez que as variáveis predito‐ ras codificavam indiretamente o desfecho diagnóstico — o escore de Alvarado incorpora em sua composição elementos que pressupõem a confirmação diagnóstica, gerando dependência circular entre preditores e variável-alvo [10].
+A Figura 3 ilustra a interface web do sistema desenvolvido, demonstrando a apresentação simultânea dos resultados dos três métodos diagnósticos para um mesmo conjunto de dados clínicos de entrada.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Disciplina · Frameworks · UFG · 2026                                                                           Página 4                                                                                 APPSPEC · Apoio ao Diagnóstico
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Figura 3. Interface do APPSPEC exibindo resultado simultâneo para um paciente com todos os critérios de Alvarado positivos (escore 10/10). Da esquerda para direita: Escore de Alvarado (regra clínica determinística), KNN (80,0% de probabilidade, k=5 vizinhos) e SVM (91,8% de probabilidade, kernel linear). A interface pedagógica exibe o algoritmo de cálculo de cada método, as referências DOI e o disclaimer clínico obrigatório.
+
+A interface permite ao usuário visualizar comparativamente as probabilidades estimadas e classificações de cada modelo, facilitando a in‐
+terpretação clínica e a análise das concordâncias e discordâncias entre os métodos.
+
+4. DISCUSSÃO
+
+Os resultados de acurácia obtidos neste estudo devem ser interpretados à luz do tipo de dados utilizados e do contexto clínico específico. A acurácia de 75,2% alcançada pelo KNN pode parecer modesta quando comparada a estudos que empregam imagens de ultrassom ou tomografia  computadorizada  processadas por  redes neurais convolucionais profundas. Entretanto, é fundamental reconhecer  que o APPSPEC opera exclusivamente com dados tabulares clínicos — sinais, sintomas e resultados laboratoriais — sem incorporar informações de imagem. Nesse cenário de dados estruturados, a literatura especializada reporta acurácias tipicamente entre 64% e 84% para algorit‐ mos de aprendizado de máquina aplicados ao diagnóstico de apendicite [8, 9]. Portanto, os resultados do presente estudo situam-se den‐ tro da faixa esperada para essa modalidade de dados, demonstrando que a plataforma desenvolvida oferece desempenho consistente com o estado da arte em predição baseada em variáveis clínicas tabulares.
+A análise comparativa dos três métodos avaliados revela padrões distintos de comportamento diagnóstico com implicações clínicas rele‐ vantes. O escore de Alvarado apresentou a maior sensibilidade (83,3%), porém sua especificidade de apenas 46,8% resultou em 25 falsos positivos no conjunto de teste — um achado consistente com meta-análises prévias que identificaram limitações significativas deste esco‐ re, particularmente sua tendência a sobrediagnosticar apendicite [5]. O SVM demonstrou o melhor equilíbrio entre as métricas, alcançan‐ do acurácia de 80,5%, sensibilidade de 80,3% e especificidade de 80,9%, representando ganhos de 12,4 pontos percentuais em acurácia e
+34,0 pontos percentuais em especificidade sobre o Alvarado. O KNN ocupou posição intermediária, com sensibilidade de 81,8% compará‐
+vel à do Alvarado, mas especificidade de 66,0% substancialmente superior. Esses resultados sugerem que, embora o escore de Alvarado [1] permaneça útil como ferramenta de triagem inicial pela sua simplicidade e alta sensibilidade, os algoritmos de aprendizado de máqui‐ na oferecem capacidade discriminativa superior, especialmente na redução de intervenções cirúrgicas desnecessárias. Ressalta-se que ne‐ nhum dos métodos deve ser utilizado isoladamente como critério diagnóstico definitivo, mas sim como ferramenta de apoio à decisão clí‐ nica.
+Além do desempenho preditivo, o APPSPEC apresenta valor pedagógico significativo para a formação em informática em saúde. A arqui‐ tetura transparente da plataforma — com Orange3 para prototipagem visual de workflows, Django para desenvolvimento web e scikit-le‐ arn [4] para implementação dos algoritmos — permite que estudantes e pesquisadores compreendam cada etapa do pipeline de aprendiza‐ do de máquina. O código-fonte aberto e a documentação detalhada possibilitam a replicação completa dos experimentos, desde o pré-pro‐ cessamento dos dados até a validação cruzada e geração das métricas finais. Essa abordagem favorece o aprendizado ativo, permitindo que usuários modifiquem parâmetros, testem novos algoritmos ou adaptem a plataforma para outros problemas diagnósticos, consoli‐ dando competências essenciais para a atuação profissional na interseção entre computação e saúde.
+O presente estudo apresenta limitações que devem ser consideradas na interpretação dos resultados. O dataset Regensburg Pediatric Ap‐ pendicitis [3], embora robusto com 753 pacientes e 32 variáveis clínicas, provém de um único centro hospitalar pediátrico alemão, com da‐ dos coletados entre 2016 e 2021. Essa origem monocêntrica pode limitar a generalização dos modelos para populações com características epidemiológicas, padrões de apresentação clínica ou protocolos diagnósticos distintos. Adicionalmente, o algoritmo KNN, apesar de seu desempenho satisfatório, não oferece interpretabilidade em nível de variável individual, dificultando a identificação de quais característi‐ cas clínicas mais contribuem para cada predição específica — uma limitação relevante para a aceitação clínica do sistema. Estudos futuros devem priorizar a validação externa em coortes brasileiras, considerando as particularidades do sistema de saúde nacional e a diversida‐ de populacional do país, além de explorar técnicas de interpretabilidade como SHAP values para aumentar a transparência das decisões algorítmicas.
+
+5. CONCLUSÃO
+
+Este estudo demonstrou a viabilidade de integrar modelos de aprendizado de máquina ao fluxo clínico de avaliação de apendicite aguda por meio de uma aplicação web desenvolvida em Django com banco de dados SQLite. Os resultados obtidos com o dataset Regensburg evidenciaram que o algoritmo SVM alcançou acurácia de 80,5% e sensibilidade de 80,3%, superando o escore de Alvarado em 12,4 pontos
+
+
+
+Disciplina · Frameworks · UFG · 2026                                                                           Página 5                                                                                 APPSPEC · Apoio ao Diagnóstico
+percentuais na acurácia e 34,0 pontos percentuais na especificidade. O modelo KNN apresentou acurácia de 75,2% e sensibilidade de
+81,8%, posicionando-se como segunda maior sensibilidade entre os métodos avaliados, sendo o escore de Alvarado o de maior sensibili‐
+dade com 83,3%.
+
+A superioridade do SVM na acurácia global indica que este algoritmo oferece melhor equilíbrio entre sensibilidade e especificidade para o contexto avaliado, reduzindo tanto falsos negativos quanto falsos positivos. O KNN, com sensibilidade de 81,8%, adequa-se a contextos onde a minimização de falsos negativos é prioritária, embora com maior taxa de falsos positivos. Ambos os modelos demonstraram de‐ sempenho compatível com a literatura internacional, que reporta acurácias entre 64% e 84% para algoritmos de aprendizado de máquina aplicados ao diagnóstico de apendicite.
+A arquitetura desenvolvida permite que profissionais de saúde obtenham probabilidades de apendicite em tempo real, mediante inserção de dados clínicos e laboratoriais padronizados. A separação aleatória estratificada entre conjuntos de treino e teste, com semente fixa para reprodutibilidade, garantiu avaliação metodologicamente adequada dos classificadores.
+Como próximos passos para evolução do sistema, identificam-se três direções prioritárias:
+
+• Integração via HL7 FHIR R4: desenvolvimento de endpoint REST padronizado para comunicação com sistemas hospitalares brasileiros como MV e TASY, permitindo consumo automatizado de dados clínicos e retorno de predições ao prontuário eletrônico [11].
+• Plataforma de modelos preditivos: expansão da arquitetura para suportar múltiplos modelos de diferentes condições clínicas, com API documentada seguindo padrões OpenAPI e versionamento de modelos para rastreabilidade [11].
+• Explicabilidade via SHAP: implementação de módulo baseado na teoria dos jogos cooperativos para quantificar a contribuição individual de cada variável clínica na predição, aumentando a transparência e a confiança do clínico nas recomendações do sistema.
+A validação prospectiva em ambiente hospitalar brasileiro constitui etapa essencial para confirmar a aplicabilidade clínica dos modelos e avaliar seu impacto em desfechos como tempo até cirurgia, taxa de apendicectomias negativas e custos assistenciais.
+Declaração sobre uso de inteligência artificial: Os autores utilizaram ferramentas de IA generativa (Antigravity e Claude AI) como apoio na redação do manuscrito e no desenvolvimento estrutural do sistema. Todo o conteúdo foi revisado e validado pelos autores, que assumem total responsabilidade pelo trabalho.
+
+
+REFERÊNCIAS
+
+[1] Alvarado A. A practical score for the early diagnosis of acute appendicitis. Ann Emerg Med. 1986;15:557–64. DOI:10.1016/S0196-0644(86)80468-2 [2] Bai S et al. Alvarado Score for Appendicitis in Children: Systematic Review and Meta-Analysis. J Pediatr Surg. 2023.
+[3] Marcinkevics R et al. Regensburg Pediatric Appendicitis [Dataset]. UCI ML Repository; 2023. DOI:10.5281/zenodo.7669442 [4] Pedregosa F et al. Scikit-learn: Machine Learning in Python. JMLR. 2011;12:2825–30.
+[5] Ohle R et al. The Alvarado score for predicting acute appendicitis: a systematic review. BMC Med. 2011;9:139. DOI:10.1186/1741-7015-9-139 [6] Cover T, Hart P. Nearest neighbor pattern classification. IEEE Trans Inf Theory. 1967;13:21–7. DOI:10.1109/TIT.1967.1053964
+[7] Cortes C, Vapnik V. Support-vector networks. Machine Learning. 1995;20(3):273–297. DOI:10.1007/BF00994018 [8] Gollapalli M et al. Appendicitis Diagnosis: Ensemble ML and XAI. Big Data Cogn Comput. 2024.
+[9] Uddin S et al. Comparative performance of KNN variants for disease prediction. Sci Rep. 2022. [10] Kaufman S et al. Leakage in Data Mining. KDD. 2012. DOI:10.1145/2020408.2020496
+[11] Panitz LM, Prata DN, Rodrigues W. Análise do desempenho dos hospitais públicos e privados que atendem ao SUS. Cad Saúde Pública.
+2024;40(9):e00156023. DOI:10.1590/0102-311XPT156023
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Disciplina · Frameworks · UFG · 2026                                                                           Página 6                                                                                 APPSPEC · Apoio ao Diagnóstico
