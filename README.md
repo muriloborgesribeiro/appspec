@@ -85,3 +85,8 @@ Documentação
 ---------------------
 Consulte specs/ para a especificação e definições detalhadas por componente.
 
+
+
+
+Este trabalho foi desenvolvido por Anahi Philbois, Francisco Neri e Murilo Ribeiro para disciplina Frameworks da Pós-Graduação em Sistemas e Agentes Inteligentes — UFG — Instituto de Informatica
+
