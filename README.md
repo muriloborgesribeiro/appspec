@@ -81,14 +81,6 @@ Estrutura de pastas
 - `orange/` (validacao_knn.ows)
 - `docs/` (referencias_clinicas.md)
 
-Mecanismos de segurança pedagógica (anti-alucinação)
---------------------------------------------------
-- Texto clínico hardcoded com DOI; nada gerado por LLM.
-- Disclaimer obrigatório e não ocultável em telas de resultado.
-- Validações estritas em `forms.py` (ex.: temperatura 35.0–42.0, leucócitos 1000–50000).
-- Indicação de confiança do KNN: se probabilidade < 0.60, exibe aviso de resultado inconclusivo.
-- Não coletar dados identificáveis; banco SQLite local sem exposição de rede.
-
 Documentação
 ---------------------
 Consulte specs/ para a especificação e definições detalhadas por componente.
