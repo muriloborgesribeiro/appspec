@@ -38,6 +38,25 @@ PAINEL_POR_PAGINA = {
         "componente_codigo": "diagnostico/views.py → def avaliar(request)",
         "badge_cor": "primary",
     },
+    "historico": {
+        "titulo": "🔧 O que está acontecendo aqui?",
+        "tecnologia_principal": "Django 4.2 — Framework Web",
+        "descricao": (
+            "Ao abrir esta tela, o sistema carrega o histórico de registros: "
+            "primeiro é exibido um indicador de carregamento e, em seguida, "
+            "a lista de eventos quando os dados chegam. "
+            "Se não houver registros ou ocorrer um erro, a tela mostrará "
+            "uma mensagem clara e uma opção para tentar novamente."
+        ),
+        "o_que_e": (
+            "Django é um framework web escrito em Python. "
+            "Ele cuida de receber os dados do navegador, processar no servidor, "
+            "e devolver a página com o resultado."
+        ),
+        "aula_referencia": "Aula 5 — Django como framework web",
+        "componente_codigo": "diagnostico/views.py → def historico(request)",
+        "badge_cor": "primary",
+    },
     "resultado": {
         "titulo": "🤖 Como este resultado foi gerado?",
         "tecnologia_principal": "Dois métodos comparados lado a lado",
