@@ -59,16 +59,16 @@
                            href="{% url 'diagnostico:index' %}">🏥 Avaliar</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {% if pagina_atual == 'historico' %}active{% endif %}"
+                           href="{% url 'diagnostico:historico' %}">📋 Histórico de Avaliações</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {% if pagina_atual == 'avaliacao_modelo' %}active{% endif %}"
                            href="{% url 'diagnostico:avaliacao_modelo' %}">📊 Métricas</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if pagina_atual == 'como_funciona' %}active{% endif %}"
                            href="{% url 'diagnostico:como_funciona' %}">❓ Como Funciona</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link {% if pagina_atual == 'historico' %}active{% endif %}"
-                           href="{% url 'diagnostico:historico' %}">📋 Histórico</a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {% if pagina_atual == 'documentacao' %}active{% endif %}"
