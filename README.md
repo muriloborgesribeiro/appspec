@@ -22,7 +22,7 @@ Como executar no Windows (powershell)
   `.\start.ps1`
 2. Abrir no navegador: `http://localhost:8000`
 
-Como executar passo a passo
+Como executar em outras plataformas
 ---------------------
 1. Opcional: Criar e ativar o ambiente virtual
 2. Instalar dependências
