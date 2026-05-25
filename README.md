@@ -9,6 +9,30 @@ KNN/scikit-learn, pandas, Orange3, joblib, matriz de confusão). O sistema deve 
 após a execução de `python setup.py`. Todo texto clínico é hardcoded com referências DOI; o
 disclaimer clínico é obrigatório nas telas de resultado.
 
+
+Como executar no Linux (bash)
+---------------------
+1. Abrir o terminal e executar
+  `./start.sh`
+2. Abrir no navegador: `http://localhost:8000`
+
+Como executar no Windows (powershell)
+---------------------
+1. Abrir o powershell e executar
+  `.\start.ps1`
+2. Abrir no navegador: `http://localhost:8000`
+
+Como executar passo a passo
+---------------------
+1. Opcional: Criar e ativar o ambiente virtual
+2. Instalar dependências
+  `pip install -r requirements.txt`
+3. Executar o setup e gerar os artefatos:
+   `python setup.py`
+4. Iniciar o servidor Django:
+   `python manage.py runserver`
+
+
 Principais requisitos
 ---------------------
 - `setup.py` único: download do dataset (ucimlrepo com fallback para `data/regensburg_raw.csv`),
@@ -47,7 +71,7 @@ Artefatos gerados
 - `diagnostico/static/diagnostico/img/confusion_matrix.png` — imagem da matriz.
 - `orange/validacao_knn.ows` — workflow Orange3 (opcional).
 
-Estrutura de pastas (essencial)
+Estrutura de pastas
 -------------------------------
 - `setup.py`
 - `manage.py`
@@ -65,49 +89,7 @@ Mecanismos de segurança pedagógica (anti-alucinação)
 - Indicação de confiança do KNN: se probabilidade < 0.60, exibe aviso de resultado inconclusivo.
 - Não coletar dados identificáveis; banco SQLite local sem exposição de rede.
 
-Como executar no Linux (bash)
+Documentação
 ---------------------
-1. Executar start.sh
-  `./start.sh`
-2. Abrir no navegador: `http://localhost:8000`
+Consulte specs/ para a especificação e definições detalhadas por componente.
 
-Como executar no Windows (powershell)
----------------------
-1. Executar start.sh
-  `.\start.ps1`
-2. Abrir no navegador: `http://localhost:8000`
-
-Como executar passo a passo
----------------------
-1. Opcional: Criar e ativar o ambiente virtual
-2. Instalar dependências
-  `pip install -r requirements.txt`
-3. Executar o setup e gerar os artefatos:
-   `python setup.py`
-4. Iniciar o servidor Django:
-   `python manage.py runserver`
-
-
-Comandos de verificação rápida
------------------------------
-- Testar Alvarado: `python -c "from ml.alvarado import testar_alvarado; testar_alvarado()"`
-- Testar KNN: `python -c "from ml.knn_engine import testar_knn; testar_knn()"`
-- Testar avaliador: `python -c "from ml.avaliador import testar_avaliador; testar_avaliador()"`
-
-Edge cases e comportamentos esperados
-------------------------------------
-- Sem internet no setup: `setup.py` tenta usar `data/regensburg_raw.csv`; se não existir,
-  instrui o usuário a obter o arquivo manualmente.
-- Arquivos já presentes: `setup.py` detecta e pula etapas (idempotência).
-- `knn_model.joblib` ausente em runtime: views apresentam mensagem pedindo execução do setup.
-- Divisão por zero em métricas: tratada retornando 0.0 com log de aviso.
-
-Questões abertas
------------------
-- Incluir ou não features de ultrassom (`appendix_diameter`, `free_fluids`) no KNN — impacto
-  no formulário e no desempenho do modelo (decisão em SPEC-04).
-- Casos adicionais de anti-alucinação a incorporar quando fornecidos pelo autor.
-
-Contato
--------
-Consulte `specs/` para a especificação completa e as definições detalhadas por componente.
