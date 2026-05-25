@@ -6,6 +6,45 @@
 <h3>📋 Histórico de Avaliações</h3>
 <p class="text-muted"></code></p>
 
+<form method="get" class="row g-2 mb-3" novalidate>
+    <div class="col-auto">
+        {{ filter_form.start_datetime.label_tag }}
+        {{ filter_form.start_datetime }}
+    </div>
+    <div class="col-auto">
+        {{ filter_form.end_datetime.label_tag }}
+        {{ filter_form.end_datetime }}
+    </div>
+    <div class="col-auto">
+        {{ filter_form.alvarado_min.label_tag }}
+        <div class="d-flex">
+            {{ filter_form.alvarado_min }}
+            {{ filter_form.alvarado_max }}
+        </div>
+    </div>
+    <div class="col-auto">
+        {{ filter_form.classificacao.label_tag }}
+        {{ filter_form.classificacao }}
+    </div>
+    <div class="col-auto">
+        {{ filter_form.knn.label_tag }}
+        {{ filter_form.knn }}
+    </div>
+    <div class="col-auto">
+        {{ filter_form.confianca.label_tag }}
+        {{ filter_form.confianca }}
+    </div>
+    <div class="col-auto align-self-end">
+        <button type="submit" class="btn btn-primary btn-sm">Filtrar</button>
+        <a href="{% url 'diagnostico:historico' %}" class="btn btn-outline-secondary btn-sm">Limpar</a>
+    </div>
+    {% if filter_form.errors %}
+    <div class="col-12 mt-2">
+        <div class="alert alert-danger p-2">{{ filter_form.errors }}</div>
+    </div>
+    {% endif %}
+</form>
+
 {% if avaliacoes %}
 <div class="card">
     <div class="card-body">
@@ -84,7 +123,7 @@
   <ul class="pagination">
     {% if page_obj.has_previous %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.previous_page_number }}" aria-label="Anterior">&laquo; Anterior</a>
+        <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.previous_page_number }}" aria-label="Anterior">&laquo; Anterior</a>
       </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
@@ -95,16 +134,16 @@
         {% if num <= 2 or num > num_pages_minus_2 or num >= low and num <= high %}
           {% if page_obj.number == num %}
             <li class="page-item active" aria-current="page"><span class="page-link">{{ num }}</span></li>
-          {% else %}
-            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
-          {% endif %}
+            {% else %}
+             <li class="page-item"><a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ num }}">{{ num }}</a></li>
+            {% endif %}
         {% endif %}
       {% endfor %}
     {% endwith %}
 
     {% if page_obj.has_next %}
       <li class="page-item">
-        <a class="page-link" href="?page={{ page_obj.next_page_number }}" aria-label="Próximo">Próximo &raquo;</a>
+        <a class="page-link" href="?{% if querystring %}{{ querystring }}&{% endif %}page={{ page_obj.next_page_number }}" aria-label="Próximo">Próximo &raquo;</a>
       </li>
     {% else %}
       <li class="page-item disabled"><span class="page-link">Próximo &raquo;</span></li>

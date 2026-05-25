@@ -361,15 +361,53 @@ def historico(request):
     # Paginação: mostrar 20 por página, ordenando por criado_em desc (mais recentes primeiro)
     per_page = 20
     # Ordenar apenas por id desc (mais recentes por inserção)
+    from .forms import HistoricoFilterForm
+
     qs = Avaliacao.objects.all().order_by('-id')
+
+    # Aplicar filtros vindos via GET usando o HistoricoFilterForm
+    form = HistoricoFilterForm(request.GET or None)
+    if form.is_valid():
+        cd = form.cleaned_data
+        if cd.get('start_datetime'):
+            qs = qs.filter(criado_em__gte=cd['start_datetime'])
+        if cd.get('end_datetime'):
+            qs = qs.filter(criado_em__lte=cd['end_datetime'])
+        if cd.get('alvarado_min') is not None:
+            qs = qs.filter(score_alvarado__gte=cd['alvarado_min'])
+        if cd.get('alvarado_max') is not None:
+            qs = qs.filter(score_alvarado__lte=cd['alvarado_max'])
+        if cd.get('classificacao'):
+            qs = qs.filter(classificacao_alvarado=cd['classificacao'])
+        if cd.get('knn'):
+            # knn stored as IntegerField (0/1)
+            try:
+                knn_val = int(cd['knn'])
+                qs = qs.filter(predicao_knn=knn_val)
+            except Exception:
+                pass
+        if cd.get('confianca'):
+            qs = qs.filter(confianca_knn=cd['confianca'])
+    else:
+        # Se houver erros de validação, não aplicamos filtros e deixamos o form
+        # com erros para exibição no template
+        pass
     paginator = Paginator(qs, per_page)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
 
     # Manter compatibilidade com o template existente passando 'avaliacoes'
+    # Precisamos preservar os parâmetros de busca nos links de paginação;
+    # gerar um querystring com todos os params exceto 'page'.
+    querydict = request.GET.copy()
+    if 'page' in querydict:
+        del querydict['page']
+
     return render(request, 'diagnostico/historico.html', {
         'page_obj': page_obj,
         'avaliacoes': page_obj.object_list,
+        'filter_form': form,
+        'querystring': querydict.urlencode(),
     })
 
 

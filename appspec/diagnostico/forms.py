@@ -74,3 +74,53 @@ class DadosClinicosForm(forms.Form):
         label="Neutrofilia (desvio à esquerda no leucograma)",
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
     )
+
+
+class HistoricoFilterForm(forms.Form):
+    """Formulário de filtros para a página de histórico.
+
+    Campos opcionais, todos em GET. Usamos tipos compatíveis com
+    inputs HTML nativos (datetime-local, number, select) para evitar
+    dependências externas.
+    """
+    start_datetime = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control form-control-sm'}),
+        label='Data/Hora início',
+    )
+    end_datetime = forms.DateTimeField(
+        required=False,
+        widget=forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control form-control-sm'}),
+        label='Data/Hora fim',
+    )
+
+    alvarado_min = forms.IntegerField(required=False, min_value=0, max_value=10,
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'placeholder': 'min'}),
+        label='Alvarado mínimo')
+    alvarado_max = forms.IntegerField(required=False, min_value=0, max_value=10,
+        widget=forms.NumberInput(attrs={'class': 'form-control form-control-sm', 'placeholder': 'max'}),
+        label='Alvarado máximo')
+
+    CLASS_CHOICES = [('', '— Qualquer —'), ('alto', 'Alto'), ('moderado', 'Moderado'), ('baixo', 'Baixo')]
+    classificacao = forms.ChoiceField(required=False, choices=CLASS_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'}), label='Classificação Alvarado')
+
+    KNN_CHOICES = [('', '— Qualquer —'), ('1', 'Apendicite'), ('0', 'Sem')]
+    knn = forms.ChoiceField(required=False, choices=KNN_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'}), label='Predição KNN')
+
+    CONFIANCA_CHOICES = [('', '— Qualquer —'), ('Alta', 'Alta'), ('Média', 'Média'), ('Baixa', 'Baixa')]
+    confianca = forms.ChoiceField(required=False, choices=CONFIANCA_CHOICES,
+        widget=forms.Select(attrs={'class': 'form-select form-select-sm'}), label='Confiança (texto)')
+
+    def clean(self):
+        cleaned = super().clean()
+        start = cleaned.get('start_datetime')
+        end = cleaned.get('end_datetime')
+        if start and end and start > end:
+            raise forms.ValidationError('Data/Hora início não pode ser maior que Data/Hora fim.')
+        amin = cleaned.get('alvarado_min')
+        amax = cleaned.get('alvarado_max')
+        if amin is not None and amax is not None and amin > amax:
+            raise forms.ValidationError('Alvarado mínimo não pode ser maior que máximo.')
+        return cleaned
