@@ -25,6 +25,7 @@ from .forms import DadosClinicosForm
 # ↑ Importa o "formulário de entrada" (ficha de admissão)
 
 from .models import Avaliacao
+from django.core.paginator import Paginator
 # ↑ Importa o "modelo de prontuário" (tabela do banco de dados)
 
 logger = logging.getLogger(__name__)
@@ -357,12 +358,18 @@ def documentacao(request):
 # ================================================================
 def historico(request):
     """Lista ultimas 20 avaliacoes do banco."""
-    avaliacoes = Avaliacao.objects.all()[:20]
-    # ↑ objects.all()[:20] = Busca os 20 registros mais recentes (via ordering no models)
-    # ↑ Equivalente SQL: SELECT * FROM diagnostico_avaliacao LIMIT 20
-    
+    # Paginação: mostrar 20 por página, ordenando por criado_em desc (mais recentes primeiro)
+    per_page = 20
+    # Ordenar apenas por id desc (mais recentes por inserção)
+    qs = Avaliacao.objects.all().order_by('-id')
+    paginator = Paginator(qs, per_page)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    # Manter compatibilidade com o template existente passando 'avaliacoes'
     return render(request, 'diagnostico/historico.html', {
-        'avaliacoes': avaliacoes,
+        'page_obj': page_obj,
+        'avaliacoes': page_obj.object_list,
     })
 
 
@@ -425,4 +432,3 @@ def inicializacao(request):
         'status_class': status_class,
         'status_msg': status_msg,
     })
-
