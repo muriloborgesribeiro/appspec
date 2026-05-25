@@ -55,13 +55,13 @@
                     <th>Data/Hora</th>
                     <th>Temp (°C)</th>
                     <th>Leucócitos</th>
-                    <th>Alvarado</th>
-                <th>Classificação</th>
                     <th>Sintomas</th>
                     <th>Sinais</th>
+                    <th>Alvarado</th>
+                    <th>Classificação</th>
                     <th>KNN</th>
-                <th>Confiança</th>
-            </tr>
+                    <th>Confiança</th>
+                </tr>
             </thead>
             <tbody>
             {% for av in avaliacoes %}
@@ -70,12 +70,6 @@
                 <td>{{ av.criado_em|date:"d/m/Y H:i" }}</td>
                 <td>{{ av.temperatura|floatformat:1 }}</td>
                 <td>{{ av.leucocitos }}</td>
-                <td class="text-center">
-                    <span class="badge bg-{% if av.classificacao_alvarado == 'alto' %}danger{% elif av.classificacao_alvarado == 'moderado' %}warning text-dark{% else %}success{% endif %}">
-                        {{ av.score_alvarado }}
-                    </span>
-                </td>
-                <td>{{ av.classificacao_alvarado|title }}</td>
                 <td>
                     {% if av.dor_migratoria or av.anorexia or av.nauseas_vomitos %}
                         {% if av.dor_migratoria %}<span class="badge bg-primary me-1">Dor migratória</span>{% endif %}
@@ -94,6 +88,12 @@
                         <span class="text-muted">—</span>
                     {% endif %}
                 </td>
+                <td class="text-center">
+                    <span class="badge bg-{% if av.classificacao_alvarado == 'alto' %}danger{% elif av.classificacao_alvarado == 'moderado' %}warning text-dark{% else %}success{% endif %}">
+                        {{ av.score_alvarado }}
+                    </span>
+                </td>
+                <td>{{ av.classificacao_alvarado|title }}</td>
                 <td class="text-center">
                     {% if av.predicao_knn is not None %}
                     <span class="badge bg-{% if av.predicao_knn == 1 %}danger{% else %}success{% endif %}">
