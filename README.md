@@ -65,13 +65,28 @@ Mecanismos de segurança pedagógica (anti-alucinação)
 - Indicação de confiança do KNN: se probabilidade < 0.60, exibe aviso de resultado inconclusivo.
 - Não coletar dados identificáveis; banco SQLite local sem exposição de rede.
 
-Como executar (resumo)
+Como executar no Linux (bash)
 ---------------------
-1. Executar o setup e gerar os artefatos:
+1. Executar start.sh
+  `./start.sh`
+2. Abrir no navegador: `http://localhost:8000`
+
+Como executar no Windows (powershell)
+---------------------
+1. Executar start.sh
+  `.\start.ps1`
+2. Abrir no navegador: `http://localhost:8000`
+
+Como executar passo a passo
+---------------------
+1. Opcional: Criar e ativar o ambiente virtual
+2. Instalar dependências
+  `pip install -r requirements.txt`
+3. Executar o setup e gerar os artefatos:
    `python setup.py`
-2. Iniciar o servidor Django:
+4. Iniciar o servidor Django:
    `python manage.py runserver`
-3. Abrir no navegador: `http://localhost:8000`
+
 
 Comandos de verificação rápida
 -----------------------------
