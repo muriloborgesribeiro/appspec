@@ -107,6 +107,12 @@
                         </a>
                     </div>
                     <div class="col">
+                        <a href="{% url 'diagnostico:historico' %}"
+                           class="btn {% if pagina_atual == 'historico' %}btn-warning{% else %}btn-outline-warning{% endif %} w-100 btn-sm">
+                            📋 Histórico de Avaliação
+                        </a>
+                    </div>
+                    <div class="col">
                         <a href="{% url 'diagnostico:avaliacao_modelo' %}"
                            class="btn {% if pagina_atual == 'avaliacao_modelo' %}btn-success{% else %}btn-outline-success{% endif %} w-100 btn-sm">
                             📊 Métricas do Modelo
@@ -116,12 +122,6 @@
                         <a href="{% url 'diagnostico:como_funciona' %}"
                            class="btn {% if pagina_atual == 'como_funciona' %}btn-info text-white{% else %}btn-outline-info{% endif %} w-100 btn-sm">
                             ❓ Como Funciona
-                        </a>
-                    </div>
-                    <div class="col">
-                        <a href="{% url 'diagnostico:historico' %}"
-                           class="btn {% if pagina_atual == 'historico' %}btn-warning{% else %}btn-outline-warning{% endif %} w-100 btn-sm">
-                            📋 Histórico
                         </a>
                     </div>
                     <div class="col">
