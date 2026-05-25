@@ -17,10 +17,12 @@
                     <th>Temp (°C)</th>
                     <th>Leucócitos</th>
                     <th>Alvarado</th>
-                    <th>Classificação</th>
+                <th>Classificação</th>
+                    <th>Sintomas</th>
+                    <th>Sinais</th>
                     <th>KNN</th>
-                    <th>Confiança</th>
-                </tr>
+                <th>Confiança</th>
+            </tr>
             </thead>
             <tbody>
             {% for av in avaliacoes %}
@@ -35,6 +37,24 @@
                     </span>
                 </td>
                 <td>{{ av.classificacao_alvarado|title }}</td>
+                <td>
+                    {% if av.dor_migratoria or av.anorexia or av.nauseas_vomitos %}
+                        {% if av.dor_migratoria %}<span class="badge bg-primary me-1">Dor migratória</span>{% endif %}
+                        {% if av.anorexia %}<span class="badge bg-secondary me-1">Anorexia</span>{% endif %}
+                        {% if av.nauseas_vomitos %}<span class="badge bg-info text-dark me-1">Náuseas/Vômitos</span>{% endif %}
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if av.dor_fid or av.descompressao_dolorosa or av.neutrofilia %}
+                        {% if av.dor_fid %}<span class="badge bg-danger me-1">Dor FID</span>{% endif %}
+                        {% if av.descompressao_dolorosa %}<span class="badge bg-warning text-dark me-1">Descompressão</span>{% endif %}
+                        {% if av.neutrofilia %}<span class="badge bg-success me-1">Neutrofilia</span>{% endif %}
+                    {% else %}
+                        <span class="text-muted">—</span>
+                    {% endif %}
+                </td>
                 <td class="text-center">
                     {% if av.predicao_knn is not None %}
                     <span class="badge bg-{% if av.predicao_knn == 1 %}danger{% else %}success{% endif %}">
