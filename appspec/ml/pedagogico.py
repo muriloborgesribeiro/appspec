@@ -32,7 +32,8 @@ PAINEL_POR_PAGINA = {
         "o_que_e": (
             "Django é um framework web escrito em Python. "
             "Ele cuida de receber os dados do navegador, processar no servidor, "
-            "e devolver a página com o resultado — tudo sem precisar de JavaScript."
+            "e devolver a página com o resultado — tudo sem exigir JavaScript "
+            "no frontend para funcionalidades básicas."
         ),
         "aula_referencia": "Aula 5 — Django como framework web",
         "componente_codigo": "diagnostico/views.py → def avaliar(request)",
@@ -128,6 +129,25 @@ PAINEL_POR_PAGINA = {
             "isso é tão importante quanto o código final."
         ),
         "badge_cor": "secondary",
+    },
+    "avaliacao_modelo": {
+        "titulo": "🔧 O que está acontecendo aqui?",
+        "tecnologia_principal": "Django 4.2 — Framework Web",
+        "descricao": (
+            "Ao abrir esta página, o sistema carrega as métricas pré-computadas "
+            "e tenta carregar os modelos treinados (KNN e SVM); em seguida, "
+            "exibe as métricas e gráficos quando os dados estiverem prontos. "
+            "Se faltarem  arquivos (metricas.json, modelos ou CSV) ou ocorrer  "
+            " um erro, a página mostrará mensagens de fallback e registrar avisos no log."
+        ),
+        "o_que_e": (
+            "Django é um framework web escrito em Python. "
+            "Ele cuida de receber os dados do navegador, processar no servidor, "
+            "e devolver a página com o resultado."
+        ),
+        "aula_referencia": "Aula 5 — Django como framework web",
+        "componente_codigo": "diagnostico/views.py → def avaliacao_modelo(request)",
+        "badge_cor": "primary",
     },
 }
 
