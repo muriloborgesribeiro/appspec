@@ -166,11 +166,11 @@ def documentacao(request):
     # Renderiza documentação completa
     # Inclui referências DOI clicáveis
 
-# VIEW 6: Histórico de avaliações
+# VIEW 6: Histórico de avaliações com paginação e filtro
 def historico(request):
-    # Lista últimas 20 avaliações do banco
+    # Lista avaliações do banco considerando paginacao
     # Tecnologia visível: Django ORM queryset
-    avaliacoes = Avaliacao.objects.all()[:20]
+    avaliacoes = Avaliacao.objects.all().order_by('-id')]
 ```
 
 ### 6.4 URLs (diagnostico/urls.py)

@@ -361,9 +361,9 @@ Define a interface web completa: layout base, formulário clínico, tela de resu
 ```html
 <nav>
   <a href="{% url 'index' %}">🏥 Avaliar</a>
-  <a href="{% url 'avaliacao_modelo' %}">📊 Métricas do Modelo</a>
+  <a href="{% url 'historico' %}">📋 Histórico de Avaliações</a>
+<a href="{% url 'avaliacao_modelo' %}">📊 Métricas do Modelo</a>
   <a href="{% url 'como_funciona' %}">❓ Como Funciona</a>
-  <a href="{% url 'historico' %}">📋 Histórico</a>
   <a href="{% url 'documentacao' %}">📚 Documentação</a>
 </nav>
 ```
